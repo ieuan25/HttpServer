@@ -48,7 +48,7 @@ string Helpers::ReadFile(const char *filename)
 		file_size = ifs.tellg();
 
 		if (file_size < 0)
-			throw file_not_found("Resource not found");
+			throw file_not_found("File not found");
 
 		ifs.seekg(0, ifs.beg);
 		buffer = new char[file_size];
@@ -58,7 +58,7 @@ string Helpers::ReadFile(const char *filename)
 	}
 	else
 	{
-		throw file_not_found("Resource could not be found.");
+		throw file_not_found("File not be found.");
 	}
 	return ret;
 }

@@ -21,7 +21,7 @@ HttpResponse::HttpResponse(int response_code, map<string,string> headers, string
 		http_version("HTTP/1.1")
 {
 	_headers = headers;
-	body = content;
+	_body = content;
 	SetStatus();
 }
 
@@ -54,7 +54,7 @@ void HttpResponse::Write(SockInterface socketInterface)
 	{
 		raw_headers += it->first + ": " + it->second + "\r\n";
 	}
-	string response = status_line + "\r\n" + raw_headers + "\r\n" + body;
+	string response = status_line + "\r\n" + raw_headers + "\r\n" + _body;
 
 	socketInterface.Write(response);
 }

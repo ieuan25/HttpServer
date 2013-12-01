@@ -31,6 +31,7 @@ public:
 
 private:
 	std::string htdocs_path;
+	std::string error_pages;
 	std::string server_name;
 	bool allow_persistent_connections;
 	int connection_timeout;
@@ -40,6 +41,8 @@ private:
 	std::map<std::string, std::string>mime_map;
 	HttpResponse* ProcessGet(HttpRequest*);
 	HttpResponse* ProcessPost(HttpRequest* httpRequest);
+	void ServeErrorPage(int, std::string);
+	void SetResponseHeaders(std::map<std::string,std::string>&, Resource&);
 	bool KeepConnectionAlive(std::string connection_header);
 	SockInterface socket;
 };

@@ -14,7 +14,7 @@
 #include "StringOperations.h"
 using namespace std;
 
-Resource::Resource(string htdocs, string res) : htdocs_path(htdocs), found(false)
+Resource::Resource(string htdocs, string res) : htdocs_path(htdocs)
 {
 	res_path = res;
 
@@ -28,24 +28,12 @@ Resource::Resource(string htdocs, string res) : htdocs_path(htdocs), found(false
 
 void Resource::Read()
 {
-	try
-	{
-		content = Helpers::ReadFile(full_path.c_str());
-		length = StringOperations::IntToString((int)content.length());
-		found = true;
-	}
-	catch(file_not_found& e)
-	{
-		content = "<!DOCTYPE HTML PUBLIC <html>"
-				"<head><title>404 Not Found</title></head>"
-				"<body>"
-				"<h1>Not Found</h1>"
-				"<p>The requested URL was not found on this server.</p>"
-				"<hr>"
-				"</body></html>";
+	content = Helpers::ReadFile(full_path.c_str());
+}
 
-		length = StringOperations::IntToString((int)content.length());
-	}
+string Resource::GetContentLength()
+{
+	return StringOperations::IntToString((int)content.length());
 }
 
 string Resource::GetResourceExtension(){

@@ -16,6 +16,7 @@ using namespace std;
 HttpProcessor::HttpProcessor(int csock, map<string, string>& conf, const map<string, string>& mtypes) : socket(csock)
 {
 	htdocs_path = conf["htdocs"];
+	error_pages = conf["errors"];
 	server_name = conf["server"];
 	allow_persistent_connections = conf["keep_alive"].compare("yes") == 0 ? true : false;
 	connection_timeout = StringOperations::StringToInt(conf["keep_alive_timeout"]);
@@ -56,38 +57,67 @@ void HttpProcessor::ProcessConnection()
 	}
 	catch(runtime_error &e)
 	{
-		cout << "Runtime error: " << e.what() <<endl;
+		ServeErrorPage(500, "/internalerror.html");
+	}
+	catch(bad_request &e)
+	{
+		ServeErrorPage(400, "/badrequest.html");
+	}
+	catch(file_not_found& e)
+	{
+		ServeErrorPage(404, "/notfound.html");
 	}
 	socket.Close();
 }
 
-bool HttpProcessor::KeepConnectionAlive(string connection_header)
+void HttpProcessor::ServeErrorPage(int response_code, string error_page)
 {
-	return connection_header.compare("keep-alive")==0 && allow_persistent_connections;
+	map<string,string> headers;
+	string content;
+
+	Resource error(error_pages, error_page);
+	error.Read();
+	SetResponseHeaders(headers, error);
+	headers.insert(pair<string, string>("Connection", "close"));
+	content = error.GetContent();
+
+	HttpResponse* response = new HttpResponse(response_code, headers, content);
+	response->Write(socket);
+	delete response;
 }
 
 HttpResponse* HttpProcessor::ProcessGet(HttpRequest* httpRequest)
 {
+	int response_code = 200;
+	map<string,string> headers;
+	string content;
+
 	string resource_path = httpRequest->GetRequestedResourcePath();
 	Resource resource(htdocs_path, resource_path);
 	resource.Read();
-
-	int response_code = resource.isFound() ? 200 : 404;
-
-	map<string,string> headers;
-	headers.insert(pair<string, string>("Content-Type", mime_map[resource.GetResourceExtension()]));
-	headers.insert(pair<string, string>("Date", Helpers::GetCurrentTime()));
-	headers.insert(pair<string, string>("Server", server_name));
-	headers.insert(pair<string, string>("Content-Length", resource.GetContentLength()));
+	SetResponseHeaders(headers, resource);
 	headers.insert(pair<string, string>("Connection", httpRequest->GetRequestHeader("connection")));
+	content = resource.GetContent();
 
-	string content = resource.GetContent();
 	return new HttpResponse(response_code, headers, content);
 }
 
 HttpResponse* HttpProcessor::ProcessPost(HttpRequest* httpRequest)
 {
 	return NULL;
+}
+
+void HttpProcessor::SetResponseHeaders(map<string, string>& headers, Resource& resource)
+{
+	headers.insert(pair<string, string>("Content-Type", mime_map[resource.GetResourceExtension()]));
+	headers.insert(pair<string, string>("Date", Helpers::GetCurrentTime()));
+	headers.insert(pair<string, string>("Server", server_name));
+	headers.insert(pair<string, string>("Content-Length", resource.GetContentLength()));
+}
+
+bool HttpProcessor::KeepConnectionAlive(string connection_header)
+{
+	return connection_header.compare("keep-alive")==0 && allow_persistent_connections;
 }
 
 HttpProcessor::~HttpProcessor()

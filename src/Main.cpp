@@ -20,8 +20,6 @@
 
 /*
  * TODO:
- * Refactor all classes independently and try to make each as indepenent as possible
- * Read up more on HTTP and figure out what other cases I need to handle for GET requests
  * Handle cases such as resource not found, bad request, internal server error in the HttpProcessor
  * Look into loggin in unix so don't have to write everything to console
  * Read up on processes and how to configure to use PHP

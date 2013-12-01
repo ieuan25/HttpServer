@@ -48,10 +48,7 @@ int TCPConnection::bindtoaddr()
 	err = listen(sockfd, max_connections);
 	if (err == -1)
 		throw std::runtime_error(strerror(errno));
-	else
-	{
-		std::cout << "Listening on port: " << port << std::endl;
-	}
+
 	return err;
 }
 
@@ -61,7 +58,6 @@ int TCPConnection::getclientsock()
 	if (err == -1)
 		throw std::runtime_error(strerror(errno));
 
-	std::cout << "Connection accepted on socket "<< sockfd <<endl;
 	return clientsockfd;
 }
 

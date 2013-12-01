@@ -24,6 +24,10 @@ public:
 	std::string GetRequestedResourcePath() { return requested_resource; };
 
 private:
+	void Validate();
+	void SetRequestValues();
+	std::vector<std::string> status_line;
+	std::vector<std::string> request_lines;
 	std::string raw_request;
 	std::string request_type;
 	std::string requested_resource;

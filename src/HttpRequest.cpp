@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iostream>
 #include "StringOperations.h"
+#include "Exceptions.h"
 
 using namespace std;
 
@@ -18,17 +19,27 @@ HttpRequest::HttpRequest(){}
 void HttpRequest::Read(SockInterface socketInterface, int timeout)
 {
 	socketInterface.Read(raw_request, MAXREQUEST, timeout);
-	vector<string> request_lines = StringOperations::Split(raw_request, '\n');
-	vector<string> start_line = StringOperations::Split(request_lines[0], ' ');
+	request_lines = StringOperations::Split(raw_request, '\n');
+	status_line = StringOperations::Split(request_lines[0], ' ');
+	Validate();
+	SetRequestValues();
+}
 
+void HttpRequest::SetRequestValues()
+{
 	headers = StringOperations::MapStrings(request_lines, ':');
+	request_type = status_line[0];
+	requested_resource = status_line[1];
+	http_version = status_line[2];
+}
 
-	if (start_line.size() != 3)
+void HttpRequest::Validate()
+{
+	if (status_line.size() != 3)
 		throw std::runtime_error("Invalid HTTP Request: Start Line Incomplete");
 
-	request_type = start_line[0];
-	requested_resource = start_line[1];
-	http_version = start_line[2];
+	if (status_line[0].compare("POST") != 0 && status_line[0].compare("GET") != 0)
+		throw std::runtime_error("Invalid request type");
 }
 
 string HttpRequest::GetRequestHeader(string header_name)

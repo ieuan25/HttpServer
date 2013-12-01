@@ -11,4 +11,5 @@ using namespace std;
 
 read_timeout::read_timeout(const string& message) : runtime_error(message) {}
 file_not_found::file_not_found(const string& message) : runtime_error(message) {}
+bad_request::bad_request(const string& message) : runtime_error(message){}
 

@@ -21,5 +21,10 @@ public:
 	file_not_found(const std::string& message);
 };
 
+class bad_request: std::runtime_error {
+public:
+	bad_request(const std::string& message);
+};
+
 #endif /* EXCEPTIONS_H_ */
 
