@@ -21,7 +21,8 @@ public:
 	void Read(SockInterface socketInterface, int timeout);
 	std::string GetRequestHeader(std::string);
 	std::string GetRequestType() { return request_type; };
-	std::string GetRequestedResourcePath() { return requested_resource; };
+	std::string GetRequestedResourcePath() { return requested_resource; }
+	std::string GetRawRequest() { return raw_request; };
 
 private:
 	void Validate();

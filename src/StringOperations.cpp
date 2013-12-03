@@ -40,6 +40,7 @@ map<string, string> StringOperations::MapStrings(const vector<string>&elements, 
 	return ret_map;
 }
 
+
 string StringOperations::Trim(string& string)
 {
   string::size_type pos = string.find_first_of('\r');

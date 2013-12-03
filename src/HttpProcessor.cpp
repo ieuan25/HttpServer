@@ -10,6 +10,7 @@
 #include "Helpers.h"
 #include "Exceptions.h"
 #include "StringOperations.h"
+#include <syslog.h>
 
 using namespace std;
 
@@ -53,18 +54,21 @@ void HttpProcessor::ProcessConnection()
 	}
 	catch(read_timeout &e)
 	{
-		cout <<"Persistent connection timed out - terminating connection" << endl;
+		syslog(LOG_DEBUG, "Persistent connection timed out - terminating.");
 	}
 	catch(runtime_error &e)
 	{
+		syslog(LOG_WARNING, "Runtime error thrown. Returning Internal Server Error.");
 		ServeErrorPage(500, "/internalerror.html");
 	}
 	catch(bad_request &e)
 	{
+		syslog(LOG_DEBUG, "Bad request thrown");
 		ServeErrorPage(400, "/badrequest.html");
 	}
 	catch(file_not_found& e)
 	{
+		syslog(LOG_DEBUG, "File not found thrown");
 		ServeErrorPage(404, "/notfound.html");
 	}
 	socket.Close();
@@ -81,6 +85,7 @@ void HttpProcessor::ServeErrorPage(int response_code, string error_page)
 	headers.insert(pair<string, string>("Connection", "close"));
 	content = error.GetContent();
 
+	syslog(LOG_DEBUG, "Serving error page with response code: %d", response_code);
 	HttpResponse* response = new HttpResponse(response_code, headers, content);
 	response->Write(socket);
 	delete response;
@@ -88,6 +93,8 @@ void HttpProcessor::ServeErrorPage(int response_code, string error_page)
 
 HttpResponse* HttpProcessor::ProcessGet(HttpRequest* httpRequest)
 {
+	syslog(LOG_DEBUG, "Processing GET request. Request: %s", httpRequest->GetRawRequest().c_str());
+
 	int response_code = 200;
 	map<string,string> headers;
 	string content;
@@ -98,7 +105,6 @@ HttpResponse* HttpProcessor::ProcessGet(HttpRequest* httpRequest)
 	SetResponseHeaders(headers, resource);
 	headers.insert(pair<string, string>("Connection", httpRequest->GetRequestHeader("connection")));
 	content = resource.GetContent();
-
 	return new HttpResponse(response_code, headers, content);
 }
 

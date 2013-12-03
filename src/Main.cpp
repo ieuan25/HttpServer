@@ -17,11 +17,10 @@
 #include "HttpProcessor.h"
 #include "Config.h"
 #include "MimeTypes.h"
+#include <syslog.h>
 
 /*
  * TODO:
- * Handle cases such as resource not found, bad request, internal server error in the HttpProcessor
- * Look into loggin in unix so don't have to write everything to console
  * Read up on processes and how to configure to use PHP
  * Read up on signals to find a way to spawn process nicely
  */
@@ -34,9 +33,10 @@ int ForkNewProcess();
 
 int main(int argc, char* argv[])
 {
+	openlog(NULL, LOG_PID, LOG_USER);
+	syslog(LOG_INFO, "Server has started.");
 	int client_socket;
 	int pid;
-	cout<<"Server has started..."<<endl;
 
 	Config conf(CONF_PATH);
 	map<string, string> config = conf.ReadConfig();
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 	}
 	catch(exception& e)
 	{
-		cout << "Exiting process: " << getpid() << " due to exception: " << e.what() <<endl;
+		syslog(LOG_WARNING, "Exiting process due to exception %s", e.what());
 		exit(1);
 	}
 
