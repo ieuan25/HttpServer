@@ -18,21 +18,27 @@
 #include "Config.h"
 #include "MimeTypes.h"
 #include <syslog.h>
+#include <signal.h>
 
 /*
  * TODO:
  * Read up on processes and how to configure to use PHP
- * Read up on signals to find a way to spawn process nicely
  */
 
 using namespace std;
 
 #define CONF_PATH "/etc/HttpTwo/Http.conf"
 
+typedef int Fork();
+
 int ForkNewProcess();
+void HandleSigChld(int);
 
 int main(int argc, char* argv[])
 {
+	if (signal(SIGCHLD, HandleSigChld) == SIG_ERR)
+		syslog(LOG_ERR, "Could not register signal handler for SIGCHILD");
+
 	openlog(NULL, LOG_PID, LOG_USER);
 	syslog(LOG_INFO, "Server has started.");
 	int client_socket;
@@ -52,6 +58,7 @@ int main(int argc, char* argv[])
 			client_socket = connection.getclientsock();
 			if ((pid = ForkNewProcess()) == 0)
 			{
+				syslog(LOG_DEBUG, "Http process %d created", getpid());
 				HttpProcessor processor(client_socket, config, mime_type_map);
 				processor.ProcessConnection();
 				exit(0);
@@ -71,33 +78,21 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+void HandleSigChld(int SIG)
+{
+	if (SIG == SIGCHLD)
+	{
+		int child_status;
+		int child_pid = wait(&child_status);
+		syslog(LOG_DEBUG, "Http process %d exiting", child_pid);
+	}
+}
 
-// calls fork twice so that new process is an orphan and init process will take care of cleanup
 int ForkNewProcess()
 {
 	int pid;
 	if((pid = fork()) < 0)
 		throw runtime_error(strerror(errno));
 
-	if(pid == 0)
-	{
-		if((pid = fork()) < 0)
-			throw runtime_error(strerror(errno));
-
-		if (pid > 0)
-			exit(0);
-		else
-		{
-			// ensure that parent has exited before returning
-			while (getppid() > 1)
-				sleep(0.1);
-		}
-	}
-	else
-	{
-		int status;
-		if (waitpid(pid, &status, 0) != pid)
-			throw runtime_error(strerror(errno));
-	}
 	return pid;
 }
