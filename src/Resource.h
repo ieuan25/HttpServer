@@ -12,14 +12,14 @@
 class Resource {
 public:
 	Resource(std::string htdocs, std::string res);
-	void Read();
+	virtual void LoadContent();
 	std::string GetContent() { return content; };
 	std::string GetContentLength();
-	std::string GetResourceExtension();
+	virtual std::string GetResourceExtension();
 	virtual ~Resource();
-private:
+protected:
 	std::string res_path;
-	std::string htdocs_path;
+	std::string base_url;
 	std::string full_path;
 	std::string content;
 

@@ -23,6 +23,7 @@ public:
 	std::string GetRequestType() { return request_type; };
 	std::string GetRequestedResourcePath() { return requested_resource; }
 	std::string GetRawRequest() { return raw_request; };
+	std::string GetPostData() { return post_data; };
 
 private:
 	void Validate();
@@ -33,6 +34,7 @@ private:
 	std::string request_type;
 	std::string requested_resource;
 	std::string http_version;
+	std::string post_data;
 	std::map<std::string,std::string> headers;
 };
 

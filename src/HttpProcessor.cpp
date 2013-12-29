@@ -79,46 +79,60 @@ void HttpProcessor::ServeErrorPage(int response_code, string error_page)
 	map<string,string> headers;
 	string content;
 
-	Resource error(error_pages, error_page);
-	error.Read();
-	SetResponseHeaders(headers, error);
+	Resource *static_resource = new Resource(error_pages, error_page);
+	static_resource->LoadContent();
+	SetResponseHeaders(headers, static_resource);
 	headers.insert(pair<string, string>("Connection", "close"));
-	content = error.GetContent();
-
+	content = static_resource->GetContent();
 	syslog(LOG_DEBUG, "Serving error page with response code: %d", response_code);
 	HttpResponse* response = new HttpResponse(response_code, headers, content);
 	response->Write(socket);
+	delete static_resource;
 	delete response;
 }
 
 HttpResponse* HttpProcessor::ProcessGet(HttpRequest* httpRequest)
 {
-	syslog(LOG_DEBUG, "Processing GET request. Request: %s", httpRequest->GetRawRequest().c_str());
+	syslog(LOG_DEBUG, "Processing %s request. Request: %s",
+			httpRequest->GetRequestType().c_str(), httpRequest->GetRawRequest().c_str());
 
 	int response_code = 200;
 	map<string,string> headers;
-	string content;
 
-	string resource_path = httpRequest->GetRequestedResourcePath();
-	Resource resource(htdocs_path, resource_path);
-	resource.Read();
-	SetResponseHeaders(headers, resource);
+	Resource *static_resource = new Resource(htdocs_path, httpRequest->GetRequestedResourcePath());
+	static_resource->LoadContent();
+	SetResponseHeaders(headers, static_resource);
 	headers.insert(pair<string, string>("Connection", httpRequest->GetRequestHeader("connection")));
-	content = resource.GetContent();
+	string content = static_resource->GetContent();
+	delete static_resource;
 	return new HttpResponse(response_code, headers, content);
 }
 
 HttpResponse* HttpProcessor::ProcessPost(HttpRequest* httpRequest)
 {
-	return NULL;
+	syslog(LOG_DEBUG, "Processing POST request. Request: %s",
+			httpRequest->GetRawRequest().c_str());
+
+	int response_code = 200;
+	map<string,string> headers;
+
+	DynamicResource* cgi_resource = new DynamicResource(htdocs_path, httpRequest->GetRequestedResourcePath(), httpRequest->GetPostData());
+	cgi_resource->LoadContent();
+	SetResponseHeaders(headers, cgi_resource);
+	headers.insert(pair<string, string>("Connection", httpRequest->GetRequestHeader("connection")));
+	cout << "MimeType1 " << cgi_resource->GetResourceExtension() << endl;
+	string content = cgi_resource->GetContent();
+	delete cgi_resource;
+	return new HttpResponse(response_code, headers, content);
 }
 
-void HttpProcessor::SetResponseHeaders(map<string, string>& headers, Resource& resource)
+void HttpProcessor::SetResponseHeaders(map<string, string>& headers, Resource* resource)
 {
-	headers.insert(pair<string, string>("Content-Type", mime_map[resource.GetResourceExtension()]));
+	cout << "MimeType " << resource->GetResourceExtension() << endl;
+	headers.insert(pair<string, string>("Content-Type", mime_map[resource->GetResourceExtension()]));
 	headers.insert(pair<string, string>("Date", Helpers::GetCurrentTime()));
 	headers.insert(pair<string, string>("Server", server_name));
-	headers.insert(pair<string, string>("Content-Length", resource.GetContentLength()));
+	headers.insert(pair<string, string>("Content-Length", resource->GetContentLength()));
 }
 
 bool HttpProcessor::KeepConnectionAlive(string connection_header)

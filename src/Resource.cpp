@@ -10,11 +10,12 @@
 #include <stdexcept>
 #include <iostream>
 #include <unistd.h>
+#include <cstdio>
 #include "Exceptions.h"
 #include "StringOperations.h"
 using namespace std;
 
-Resource::Resource(string htdocs, string res) : htdocs_path(htdocs)
+Resource::Resource(string htdocs, string res) : base_url(htdocs)
 {
 	res_path = res;
 
@@ -23,10 +24,10 @@ Resource::Resource(string htdocs, string res) : htdocs_path(htdocs)
 		res_path = "/index.html";
 	}
 
-	full_path = htdocs_path + res_path;
+	full_path = base_url + res_path;
 }
 
-void Resource::Read()
+void Resource::LoadContent()
 {
 	content = Helpers::ReadFile(full_path.c_str());
 }

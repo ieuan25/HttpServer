@@ -31,6 +31,7 @@ void HttpRequest::SetRequestValues()
 	request_type = status_line[0];
 	requested_resource = status_line[1];
 	http_version = status_line[2];
+	post_data = request_lines[request_lines.size()-1];
 }
 
 void HttpRequest::Validate()

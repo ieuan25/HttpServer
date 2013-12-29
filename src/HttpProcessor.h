@@ -21,6 +21,7 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 #include "Resource.h"
+#include "DynamicResource.h"
 #include "SockInterface.h"
 
 class HttpProcessor {
@@ -42,7 +43,7 @@ private:
 	HttpResponse* ProcessGet(HttpRequest*);
 	HttpResponse* ProcessPost(HttpRequest* httpRequest);
 	void ServeErrorPage(int, std::string);
-	void SetResponseHeaders(std::map<std::string,std::string>&, Resource&);
+	void SetResponseHeaders(std::map<std::string,std::string>&, Resource*);
 	bool KeepConnectionAlive(std::string connection_header);
 	SockInterface socket;
 };
