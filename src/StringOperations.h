@@ -21,6 +21,7 @@ public:
 	static std::string IntToString(int);
 	static std::vector<std::string> Split(const std::string &s, char delim);
     static std::map<std::string, std::string> MapStrings(const std::vector<std::string>& elements, const char seperator);
-	virtual ~StringOperations();
+    static bool Contains(const std::string &s, const char *c);
+    virtual ~StringOperations();
 };
 #endif /* STRINGOPERATIONS_H_ */

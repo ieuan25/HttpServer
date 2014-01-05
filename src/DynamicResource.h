@@ -8,6 +8,7 @@
 #ifndef DYNAMICRESOURCE_H_
 #define DYNAMICRESOURCE_H_
 #include "Resource.h"
+#include "HttpRequest.h"
 #include <string>
 
 class DynamicResource : public Resource{
@@ -18,8 +19,10 @@ public:
 	virtual ~DynamicResource();
 
 private:
-	void SetEnvironment();
-	std::string post_data;
+	virtual void SetEnvironment() = 0;
+	virtual void SetCGICommandString(char*) = 0;
+protected:
+	std::string request_data;
 
 };
 #endif /* DYNAMICRESOURCE_H_ */

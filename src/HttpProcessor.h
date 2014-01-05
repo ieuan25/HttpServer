@@ -21,7 +21,8 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 #include "Resource.h"
-#include "DynamicResource.h"
+#include "DynamicGETResource.h"
+#include "DynamicPOSTResource.h"
 #include "SockInterface.h"
 
 class HttpProcessor {
@@ -34,18 +35,18 @@ private:
 	std::string htdocs_path;
 	std::string error_pages;
 	std::string server_name;
+	SockInterface socket;
+	HttpRequest *httpRequest;
+	HttpResponse *httpResponse;
+	Resource *resource;
 	bool allow_persistent_connections;
 	int connection_timeout;
-	std::string resource_length;
-	std::string resource_type;
-	std::string resource_content;
 	std::map<std::string, std::string>mime_map;
-	HttpResponse* ProcessGet(HttpRequest*);
-	HttpResponse* ProcessPost(HttpRequest* httpRequest);
 	void ServeErrorPage(int, std::string);
-	void SetResponseHeaders(std::map<std::string,std::string>&, Resource*);
+	void SetResponseHeaders(std::map<std::string,std::string>&, Resource*, std::string connection);
 	bool KeepConnectionAlive(std::string connection_header);
-	SockInterface socket;
+	HttpResponse* ProcessRequest();
+	Resource* GetResource();
 };
 
 #endif /* HTTPPROCESSOR_H_ */

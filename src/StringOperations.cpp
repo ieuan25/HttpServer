@@ -63,6 +63,11 @@ string StringOperations::Trim(string& string)
   return string;
 }
 
+bool StringOperations::Contains(const string &s, const char *c)
+{
+	return s.find(c) != string::npos;
+}
+
 vector<string> StringOperations::Split(const string &s, char delim){
 
 	stringstream ss(s);

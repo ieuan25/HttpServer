@@ -14,16 +14,19 @@
 #include <stdexcept>
 #include "SockInterface.h"
 
+enum ResourceType { STATIC, CGI_POST, CGI_GET };
+
 class HttpRequest {
 public:
 	HttpRequest();
 	virtual ~HttpRequest();
 	void Read(SockInterface socketInterface, int timeout);
 	std::string GetRequestHeader(std::string);
-	std::string GetRequestType() { return request_type; };
 	std::string GetRequestedResourcePath() { return requested_resource; }
 	std::string GetRawRequest() { return raw_request; };
-	std::string GetPostData() { return post_data; };
+	std::string GetPOSTData() { return post_data; };
+	std::string GetGETData() { return get_data; };
+	ResourceType GetResourceType() { return resource_type; };
 
 private:
 	void Validate();
@@ -31,10 +34,11 @@ private:
 	std::vector<std::string> status_line;
 	std::vector<std::string> request_lines;
 	std::string raw_request;
-	std::string request_type;
 	std::string requested_resource;
 	std::string http_version;
 	std::string post_data;
+	std::string get_data;
+	ResourceType resource_type;
 	std::map<std::string,std::string> headers;
 };
 

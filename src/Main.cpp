@@ -16,15 +16,14 @@
 #include "TCPConnection.h"
 #include "HttpProcessor.h"
 #include "Config.h"
-#include "MimeTypes.h"
 #include <syslog.h>
 #include <signal.h>
 
 /*
  * TODO:
- * Read up on processes and how to configure to use PHP
  */
 
+#include "MimeTypes.h"
 using namespace std;
 
 #define CONF_PATH "/etc/HttpTwo/Http.conf"
