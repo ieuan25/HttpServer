@@ -27,7 +27,7 @@ std::map<std::string, std::string> Config::ReadConfig(){
 	return config_items;
 }
 
-vector<string> Config::GetConfigLines(string& raw_config)
+vector<string> Config::GetConfigLines(const string& raw_config)
 {
 	vector<string> config_lines = StringOperations::Split(raw_config, '\n');
 	config_lines.erase(remove_if(config_lines.begin(), config_lines.end(), Config::CanIgnoreLine), config_lines.end());

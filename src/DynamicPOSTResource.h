@@ -12,7 +12,7 @@
 
 class DynamicPOSTResource : public DynamicResource {
 public:
-	DynamicPOSTResource(std::string, std::string, std::string);
+	DynamicPOSTResource(const std::string&, const std::string&, const std::string&);
 	virtual ~DynamicPOSTResource();
 private:
 	void SetEnvironment();

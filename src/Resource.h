@@ -11,7 +11,7 @@
 
 class Resource {
 public:
-	Resource(std::string htdocs, std::string res);
+	Resource(const std::string& htdocs, const std::string& res);
 	virtual void LoadContent();
 	std::string GetContent() { return content; };
 	std::string GetContentLength();

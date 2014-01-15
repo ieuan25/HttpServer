@@ -21,6 +21,9 @@
 
 /*
  * TODO:
+ * Clean up HTTP Request class
+ * Modify code to run the process as a daemon
+ * Add the daemon to startup using an upstart config file
  */
 
 #include "MimeTypes.h"

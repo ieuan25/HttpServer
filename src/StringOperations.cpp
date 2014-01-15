@@ -81,7 +81,7 @@ vector<string> StringOperations::Split(const string &s, char delim){
 	return ret;
 }
 
-int StringOperations::StringToInt(string str)
+int StringOperations::StringToInt(const string& str)
 {
 	return lexical_cast<int>(str);
 }

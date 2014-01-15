@@ -14,12 +14,12 @@
 
 class HttpResponse {
 public:
-	HttpResponse(int, std::map<std::string,std::string>, std::string);
+	HttpResponse(int, const std::map<std::string,std::string>&, const std::string&);
 	virtual ~HttpResponse();
 	void SetStatus();
 	bool AddHeader(std::string, std::string);
 	void SetBody(std::string s) { _body = s; } ;
-	void Write(SockInterface);
+	void Write(const SockInterface&);
 
 private:
 	std::map<std::string, std::string> response_headers;

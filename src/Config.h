@@ -21,7 +21,7 @@ public:
 	std::map<std::string, std::string> GetConfigItems() {return config_items;};
 private:
 protected:
-	std::vector<std::string> GetConfigLines(std::string& raw_config);
+	std::vector<std::string> GetConfigLines(const std::string& raw_config);
 	static bool CanIgnoreLine(const std::string& line);
 	char path[64];
 	std::map<std::string, std::string> config_items;

@@ -12,7 +12,7 @@
 
 class DynamicGETResource : public DynamicResource {
 public:
-	DynamicGETResource(std::string, std::string, std::string);
+	DynamicGETResource(const std::string&, const std::string&, const std::string&);
 	virtual ~DynamicGETResource();
 private:
 	void SetEnvironment();

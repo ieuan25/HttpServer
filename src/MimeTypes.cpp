@@ -38,7 +38,7 @@ std::map<std::string, std::string> MimeTypeConf::ReadConfig(){
 	return config_items;
 }
 
-void MimeTypeConf::MapFileExtensionsToMimeTypes(const vector<string> &file_extensions,const string& mime_type)
+void MimeTypeConf::MapFileExtensionsToMimeTypes(const vector<string> &file_extensions, const string& mime_type)
 {
 	for (vector<string>::const_iterator it=file_extensions.begin(); it != file_extensions.end(); ++it)
 	{

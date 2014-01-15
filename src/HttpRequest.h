@@ -20,8 +20,8 @@ class HttpRequest {
 public:
 	HttpRequest();
 	virtual ~HttpRequest();
-	void Read(SockInterface socketInterface, int timeout);
-	std::string GetRequestHeader(std::string);
+	void Read(const SockInterface& socketInterface, int timeout);
+	std::string GetRequestHeader(const std::string&);
 	std::string GetRequestedResourcePath() { return requested_resource; }
 	std::string GetRawRequest() { return raw_request; };
 	std::string GetPOSTData() { return post_data; };

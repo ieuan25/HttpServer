@@ -18,7 +18,7 @@ HttpRequest::HttpRequest(){
 	resource_type = STATIC;
 }
 
-void HttpRequest::Read(SockInterface socketInterface, int timeout)
+void HttpRequest::Read(const SockInterface& socketInterface, int timeout)
 {
 	socketInterface.Read(raw_request, MAXREQUEST, timeout);
 	request_lines = StringOperations::Split(raw_request, '\n');
@@ -69,7 +69,7 @@ void HttpRequest::Validate()
 		throw bad_request("Invalid request type");
 }
 
-string HttpRequest::GetRequestHeader(string header_name)
+string HttpRequest::GetRequestHeader(const string& header_name)
 {
 	map<string, string>::iterator it = headers.find(header_name);
 

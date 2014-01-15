@@ -15,7 +15,7 @@
 #include "StringOperations.h"
 using namespace std;
 
-Resource::Resource(string htdocs, string res) : base_url(htdocs)
+Resource::Resource(const string& htdocs, const string& res) : base_url(htdocs)
 {
 	res_path = res;
 

@@ -13,7 +13,7 @@
 
 class DynamicResource : public Resource{
 public:
-	DynamicResource(std::string, std::string, std::string);
+	DynamicResource(const std::string&, const std::string&, const std::string&);
 	void LoadContent();
 	std::string GetResourceExtension();
 	virtual ~DynamicResource();

@@ -14,13 +14,13 @@
 
 using namespace std;
 
-HttpProcessor::HttpProcessor(int csock, map<string, string>& conf, const map<string, string>& mtypes) : socket(csock)
+HttpProcessor::HttpProcessor(int csock, const map<string, string>& conf, const map<string, string>& mtypes) : socket(csock)
 {
-	htdocs_path = conf["htdocs"];
-	error_pages = conf["errors"];
-	server_name = conf["server"];
-	allow_persistent_connections = conf["keep_alive"].compare("yes") == 0 ? true : false;
-	connection_timeout = StringOperations::StringToInt(conf["keep_alive_timeout"]);
+	htdocs_path = conf.at("htdocs");
+	error_pages = conf.at("errors");
+	server_name = conf.at("server");
+	allow_persistent_connections = conf.at("keep_alive").compare("yes") == 0 ? true : false;
+	connection_timeout = StringOperations::StringToInt(conf.at("keep_alive_timeout"));
 	mime_map = mtypes;
 	httpRequest = NULL;
 	httpResponse = NULL;
@@ -67,7 +67,7 @@ void HttpProcessor::ProcessConnection()
 	socket.Close();
 }
 
-void HttpProcessor::ServeErrorPage(int response_code, string error_page)
+void HttpProcessor::ServeErrorPage(int response_code, const string& error_page)
 {
 	syslog(LOG_DEBUG, "Serving error page with response code: %d", response_code);
 
@@ -126,7 +126,7 @@ Resource* HttpProcessor::GetResource()
 	}
 }
 
-void HttpProcessor::SetResponseHeaders(map<string, string>& headers, Resource* resource, string connection)
+void HttpProcessor::SetResponseHeaders(map<string, string>& headers, Resource* resource, const string& connection)
 {
 	headers.insert(pair<string, string>("Connection", connection));
 	headers.insert(pair<string, string>("Content-Type", mime_map[resource->GetResourceExtension()]));
@@ -135,7 +135,7 @@ void HttpProcessor::SetResponseHeaders(map<string, string>& headers, Resource* r
 	headers.insert(pair<string, string>("Content-Length", resource->GetContentLength()));
 }
 
-bool HttpProcessor::KeepConnectionAlive(string connection_header)
+bool HttpProcessor::KeepConnectionAlive(const string& connection_header)
 {
 	return connection_header.compare("keep-alive")==0 && allow_persistent_connections;
 }

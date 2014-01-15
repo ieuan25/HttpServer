@@ -9,7 +9,7 @@
 #include "StringOperations.h"
 using namespace std;
 
-DynamicPOSTResource::DynamicPOSTResource(std::string a, std::string b, std::string c) :
+DynamicPOSTResource::DynamicPOSTResource(const std::string& a, const std::string& b, const std::string& c) :
 DynamicResource(a,b,c)  {}
 
 void DynamicPOSTResource::SetCGICommandString(char* cmd)

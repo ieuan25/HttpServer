@@ -10,10 +10,11 @@
 #include <iostream>
 
 using namespace std;
-DynamicGETResource::DynamicGETResource(std::string a, std::string b, std::string c) :
+DynamicGETResource::DynamicGETResource(const std::string& a, const std::string& b, const std::string& c) :
 DynamicResource(a,b,c)  {}
 
-void DynamicGETResource::SetCGICommandString(char *cmd) {
+void DynamicGETResource::SetCGICommandString(char *cmd)
+{
 	sprintf(cmd, "/usr/bin/php-cgi");
 }
 

@@ -23,7 +23,7 @@ void SockInterface::Close()
 		throw runtime_error("Error closing socket");
 }
 
-void SockInterface::Read(string &request, const int max_bytes, int timeout)
+void SockInterface::Read(string &request, const int max_bytes, int timeout) const
 {
 	int bytesRead;
 	char buff[max_bytes];
@@ -50,7 +50,7 @@ void SockInterface::Read(string &request, const int max_bytes, int timeout)
 	request = buff;
 }
 
-void SockInterface::PollSocket(int timeout)
+void SockInterface::PollSocket(int timeout) const
 {
 	struct pollfd readpoll;
 	int pollResult = 0;
@@ -68,7 +68,7 @@ void SockInterface::PollSocket(int timeout)
 	}
 }
 
-void SockInterface::Write(const string &response)
+void SockInterface::Write(const string &response) const
 {
 	unsigned int bytesWritten;
 	const char *raw_response = response.data();

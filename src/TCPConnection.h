@@ -23,7 +23,7 @@ typedef struct addrinfo addinfo;
 
 class TCPConnection {
 public:
-	TCPConnection(std::string port, std::string max_cons);
+	TCPConnection(const std::string& port, const std::string& max_cons);
 	virtual ~TCPConnection();
 	int bindtoaddr();
 	int getclientsock();

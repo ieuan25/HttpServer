@@ -27,7 +27,7 @@
 
 class HttpProcessor {
 public:
-	HttpProcessor(int, std::map<std::string, std::string>&conf, const std::map<std::string, std::string>&mtypes);
+	HttpProcessor(int, const std::map<std::string, std::string>&conf, const std::map<std::string, std::string>&mtypes);
 	void ProcessConnection();
 	virtual ~HttpProcessor();
 
@@ -42,9 +42,9 @@ private:
 	bool allow_persistent_connections;
 	int connection_timeout;
 	std::map<std::string, std::string>mime_map;
-	void ServeErrorPage(int, std::string);
-	void SetResponseHeaders(std::map<std::string,std::string>&, Resource*, std::string connection);
-	bool KeepConnectionAlive(std::string connection_header);
+	void ServeErrorPage(int, const std::string&);
+	void SetResponseHeaders(std::map<std::string,std::string>&, Resource*, const std::string& connection);
+	bool KeepConnectionAlive(const std::string& connection_header);
 	HttpResponse* ProcessRequest();
 	Resource* GetResource();
 };

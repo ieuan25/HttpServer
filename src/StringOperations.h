@@ -17,7 +17,7 @@ class StringOperations {
 public:
 	StringOperations();
 	static std::string Trim(std::string&);
-	static int StringToInt(std::string);
+	static int StringToInt(const std::string&);
 	static std::string IntToString(int);
 	static std::vector<std::string> Split(const std::string &s, char delim);
     static std::map<std::string, std::string> MapStrings(const std::vector<std::string>& elements, const char seperator);

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-TCPConnection::TCPConnection(string port, string max_cons) : port(port)
+TCPConnection::TCPConnection(const string& port, const string& max_cons) : port(port)
 {
 	addinfo *addrlist;
 	addinfo hints;

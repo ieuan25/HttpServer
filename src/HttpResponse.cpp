@@ -17,7 +17,7 @@
 
 using namespace std;
 
-HttpResponse::HttpResponse(int response_code, map<string,string> headers, string content) : response_code(response_code),
+HttpResponse::HttpResponse(int response_code, const map<string,string>& headers, const string& content) : response_code(response_code),
 		http_version("HTTP/1.1")
 {
 	_headers = headers;
@@ -47,7 +47,7 @@ void HttpResponse::SetStatus()
 	status_line = http_version + " " + StringOperations::IntToString(response_code) + " " + response_message;
 }
 
-void HttpResponse::Write(SockInterface socketInterface)
+void HttpResponse::Write(const SockInterface& socketInterface)
 {
 	string raw_headers;
 	for (map<string, string>::iterator it=_headers.begin(); it!=_headers.end(); ++it)
