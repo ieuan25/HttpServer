@@ -2,9 +2,12 @@
 
 # root permissions needed to run this script
 # build the application using the generated makefiles - this should create the HttpServer executable
+cd Build
+
+echo "removing old build"
+rm src/*.{d,o}
 
 echo "building httpserver...."
-cd Build
 make
 cd ..
 

@@ -13,7 +13,6 @@
 #include <stdexcept>
 #include <errno.h>
 #include <stdlib.h>
-#include <stdlib.h>
 #include <cstring>
 #include <string>
 #include <poll.h>
