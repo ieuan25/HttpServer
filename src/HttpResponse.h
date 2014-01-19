@@ -15,11 +15,11 @@
 class HttpResponse {
 public:
 	HttpResponse(int, const std::map<std::string,std::string>&, const std::string&);
-	virtual ~HttpResponse();
+	~HttpResponse();
 	void SetStatus();
 	bool AddHeader(std::string, std::string);
 	void SetBody(std::string s) { _body = s; } ;
-	void Write(const SockInterface&);
+	void Write(SockInterface&);
 
 private:
 	std::map<std::string, std::string> response_headers;

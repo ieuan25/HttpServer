@@ -16,7 +16,7 @@ public:
 	DynamicResource(const std::string&, const std::string&, const std::string&);
 	void LoadContent();
 	std::string GetResourceExtension();
-	virtual ~DynamicResource();
+	~DynamicResource();
 
 private:
 	virtual void SetEnvironment() = 0;

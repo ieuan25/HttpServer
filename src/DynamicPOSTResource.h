@@ -13,7 +13,7 @@
 class DynamicPOSTResource : public DynamicResource {
 public:
 	DynamicPOSTResource(const std::string&, const std::string&, const std::string&);
-	virtual ~DynamicPOSTResource();
+	~DynamicPOSTResource();
 private:
 	void SetEnvironment();
 	void SetCGICommandString(char*);

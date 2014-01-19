@@ -20,11 +20,11 @@
 class SockInterface {
 public:
 	SockInterface(int csock);
-	void Read(std::string &buffer, const int max_bytes, int timeout) const;
-	void Write(const std::string &data) const;
+	void Read(std::string &buffer, const int max_bytes, int timeout);
+	void Write(const std::string &data);
 	void Close();
-	void PollSocket(int) const;
-	virtual ~SockInterface();
+	void PollSocket(int);
+	~SockInterface();
 	int socket_fd;
 
 private:

@@ -24,8 +24,9 @@
 /*
  * TODO:
  * Clean up HTTP Request class
- * Modify code to run the process as a daemon
- * Add the daemon to startup using an upstart config file
+ * Use smart pointers to fix double de-allocation
+ * Read up on C++ templates
+ * Read up on signal handling and find bug, virtual destrcutors and when to use them and also the const SocketInterfaces
  */
 
 #include "MimeTypes.h"
@@ -59,7 +60,6 @@ int main(int argc, char* argv[])
 
 	try
 	{
-
 		TCPConnection connection(config["port"], config["max_connections"]);
 		connection.bindtoaddr();
 		while(1)
@@ -130,12 +130,23 @@ void Daemonise()
 
 void HandleSigChld(int SIG)
 {
+	int old_err = errno;
+
+	if (signal(SIGCHLD, HandleSigChld) == SIG_ERR)
+				syslog(LOG_ERR, "Could not register signal handler for SIGCHILD");
+
 	if (SIG == SIGCHLD)
 	{
 		int child_status;
-		int child_pid = wait(&child_status);
+		int child_pid;
+
+		if ((child_pid = wait(&child_status)) < 0)
+			throw runtime_error(strerror(errno));
+
 		syslog(LOG_DEBUG, "Http process %d exiting", child_pid);
 	}
+
+	errno = old_err;
 }
 
 int ForkNewProcess()

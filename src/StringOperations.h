@@ -22,6 +22,6 @@ public:
 	static std::vector<std::string> Split(const std::string &s, char delim);
     static std::map<std::string, std::string> MapStrings(const std::vector<std::string>& elements, const char seperator);
     static bool Contains(const std::string &s, const char *c);
-    virtual ~StringOperations();
+    ~StringOperations();
 };
 #endif /* STRINGOPERATIONS_H_ */

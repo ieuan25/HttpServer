@@ -18,7 +18,7 @@ HttpRequest::HttpRequest(){
 	resource_type = STATIC;
 }
 
-void HttpRequest::Read(const SockInterface& socketInterface, int timeout)
+void HttpRequest::Read(SockInterface& socketInterface, int timeout)
 {
 	socketInterface.Read(raw_request, MAXREQUEST, timeout);
 	request_lines = StringOperations::Split(raw_request, '\n');

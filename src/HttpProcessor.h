@@ -29,7 +29,7 @@ class HttpProcessor {
 public:
 	HttpProcessor(int, const std::map<std::string, std::string>&conf, const std::map<std::string, std::string>&mtypes);
 	void ProcessConnection();
-	virtual ~HttpProcessor();
+	~HttpProcessor();
 
 private:
 	std::string htdocs_path;

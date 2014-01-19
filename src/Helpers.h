@@ -15,7 +15,7 @@
 class Helpers {
 public:
 	Helpers();
-	virtual ~Helpers();
+	~Helpers();
 	static std::string ReadFile(const char *filename);
 	static std::string GetCurrentTime();
 private:

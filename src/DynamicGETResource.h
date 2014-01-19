@@ -13,7 +13,7 @@
 class DynamicGETResource : public DynamicResource {
 public:
 	DynamicGETResource(const std::string&, const std::string&, const std::string&);
-	virtual ~DynamicGETResource();
+	~DynamicGETResource();
 private:
 	void SetEnvironment();
 	void SetCGICommandString(char *cmd);

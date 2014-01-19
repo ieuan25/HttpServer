@@ -47,7 +47,7 @@ void HttpResponse::SetStatus()
 	status_line = http_version + " " + StringOperations::IntToString(response_code) + " " + response_message;
 }
 
-void HttpResponse::Write(const SockInterface& socketInterface)
+void HttpResponse::Write(SockInterface& socketInterface)
 {
 	string raw_headers;
 	for (map<string, string>::iterator it=_headers.begin(); it!=_headers.end(); ++it)

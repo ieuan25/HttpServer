@@ -19,8 +19,8 @@ enum ResourceType { STATIC, CGI_POST, CGI_GET };
 class HttpRequest {
 public:
 	HttpRequest();
-	virtual ~HttpRequest();
-	void Read(const SockInterface& socketInterface, int timeout);
+	~HttpRequest();
+	void Read(SockInterface& socketInterface, int timeout);
 	std::string GetRequestHeader(const std::string&);
 	std::string GetRequestedResourcePath() { return requested_resource; }
 	std::string GetRawRequest() { return raw_request; };
