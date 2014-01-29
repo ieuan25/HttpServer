@@ -39,7 +39,7 @@ TCPConnection::TCPConnection(const string& port, const string& max_cons) : port(
 		throw std::runtime_error(strerror(errno));
 }
 
-int TCPConnection::bindtoaddr()
+int TCPConnection::BindToAddress()
 {
 	err = bind(sockfd, addresstobind->ai_addr, addresstobind->ai_addrlen);
 	if (err == -1)
@@ -52,10 +52,10 @@ int TCPConnection::bindtoaddr()
 	return err;
 }
 
-int TCPConnection::getclientsock()
+int TCPConnection::GetClientSocket()
 {
 	int clientsockfd = accept(sockfd, NULL, NULL);
-	if (err == -1)
+	if (clientsockfd == -1)
 		throw std::runtime_error(strerror(errno));
 
 	return clientsockfd;

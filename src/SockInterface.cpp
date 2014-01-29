@@ -46,7 +46,6 @@ void SockInterface::Read(string &request, const int max_bytes, int timeout)
 	{
 		throw runtime_error("End of file found");
 	}
-
 	request = buff;
 }
 

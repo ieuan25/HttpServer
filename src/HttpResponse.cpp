@@ -20,12 +20,12 @@ using namespace std;
 HttpResponse::HttpResponse(int response_code, const map<string,string>& headers, const string& content) : response_code(response_code),
 		http_version("HTTP/1.1")
 {
-	_headers = headers;
-	_body = content;
-	SetStatus();
+	response_headers = headers;
+	response_body = content;
+	status_line = GetHttpStatusLine();
 }
 
-void HttpResponse::SetStatus()
+string HttpResponse::GetHttpStatusLine()
 {
 	string response_message;
 
@@ -44,17 +44,17 @@ void HttpResponse::SetStatus()
 			break;
 	}
 
-	status_line = http_version + " " + StringOperations::IntToString(response_code) + " " + response_message;
+	return http_version + " " + StringOperations::IntToString(response_code) + " " + response_message;
 }
 
 void HttpResponse::Write(SockInterface& socketInterface)
 {
 	string raw_headers;
-	for (map<string, string>::iterator it=_headers.begin(); it!=_headers.end(); ++it)
+	for (map<string, string>::iterator it=response_headers.begin(); it!=response_headers.end(); ++it)
 	{
 		raw_headers += it->first + ": " + it->second + "\r\n";
 	}
-	string response = status_line + "\r\n" + raw_headers + "\r\n" + _body;
+	string response = status_line + "\r\n" + raw_headers + "\r\n" + response_body;
 
 	socketInterface.Write(response);
 }

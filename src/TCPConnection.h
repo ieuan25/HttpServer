@@ -25,8 +25,8 @@ class TCPConnection {
 public:
 	TCPConnection(const std::string& port, const std::string& max_cons);
 	~TCPConnection();
-	int bindtoaddr();
-	int getclientsock();
+	int BindToAddress();
+	int GetClientSocket();
 	std::string port;
 
 private:

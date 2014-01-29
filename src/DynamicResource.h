@@ -15,7 +15,7 @@ class DynamicResource : public Resource{
 public:
 	DynamicResource(const std::string&, const std::string&, const std::string&);
 	void LoadContent();
-	std::string GetResourceExtension();
+	std::string GetResourceExtension() { return "html";};
 	~DynamicResource();
 
 private:

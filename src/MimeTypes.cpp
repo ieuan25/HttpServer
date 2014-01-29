@@ -14,7 +14,6 @@
 
 using namespace std;
 
-
 MimeTypeConf::MimeTypeConf(const char * path) : Config(path) {}
 
 std::map<std::string, std::string> MimeTypeConf::ReadConfig(){

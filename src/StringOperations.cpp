@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/erase.hpp>
+#include "Exceptions.h"
 using namespace boost;
 using namespace std;
 
@@ -66,6 +67,16 @@ string StringOperations::Trim(string& string)
 bool StringOperations::Contains(const string &s, const char *c)
 {
 	return s.find(c) != string::npos;
+}
+
+string StringOperations::GetFirstLine(const string &s)
+{
+	stringstream ss(s);
+	string ret_val;
+	if (getline(ss, ret_val))
+		return ret_val;
+	else
+		throw runtime_error("Invalid input");
 }
 
 vector<string> StringOperations::Split(const string &s, char delim){

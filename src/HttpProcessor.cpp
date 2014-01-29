@@ -86,7 +86,7 @@ void HttpProcessor::ServeErrorPage(int response_code, const string& error_page)
 
 HttpResponse* HttpProcessor::ProcessRequest()
 {
-	syslog(LOG_DEBUG, "Processing request. Request: %s", httpRequest->GetRawRequest().c_str());
+	syslog(LOG_DEBUG, "Processing request.");
 
 	map<string,string> headers;
 	resource = GetResource();
@@ -110,13 +110,13 @@ Resource* HttpProcessor::GetResource()
 		case CGI_POST:
 		{
 			return new DynamicPOSTResource(htdocs_path, httpRequest->GetRequestedResourcePath(),
-					httpRequest->GetPOSTData());
+					httpRequest->GetRequestData());
 			break;
 		}
 		case CGI_GET:
 		{
 			return new DynamicGETResource(htdocs_path, httpRequest->GetRequestedResourcePath(),
-					httpRequest->GetGETData());
+					httpRequest->GetRequestData());
 			break;
 		}
 		default:

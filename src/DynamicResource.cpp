@@ -17,10 +17,6 @@ using namespace std;
 DynamicResource::DynamicResource(const string& htdocs, const string& script_path, const string& data) :
 		Resource(htdocs,script_path), request_data(data){}
 
-std::string DynamicResource::GetResourceExtension(){
-	return "html";
-}
-
 void DynamicResource::LoadContent()
 {
 	SetEnvironment();

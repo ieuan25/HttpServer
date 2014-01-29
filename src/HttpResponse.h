@@ -16,17 +16,16 @@ class HttpResponse {
 public:
 	HttpResponse(int, const std::map<std::string,std::string>&, const std::string&);
 	~HttpResponse();
-	void SetStatus();
 	bool AddHeader(std::string, std::string);
-	void SetBody(std::string s) { _body = s; } ;
+	void SetBody(std::string s) { response_body = s; } ;
 	void Write(SockInterface&);
 
 private:
+	std::string GetHttpStatusLine();
 	std::map<std::string, std::string> response_headers;
-	std::string _body;
+	std::string response_body;
 	int response_code;
 	std::string status_line;
-	std::map<std::string,std::string> _headers;
 	std::string http_version;
 };
 

@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <string>
+#include <vector>
 #include <poll.h>
 
 class SockInterface {

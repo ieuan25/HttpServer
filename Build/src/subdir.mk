@@ -13,6 +13,7 @@ CPP_SRCS += \
 ../src/HttpProcessor.cpp \
 ../src/HttpRequest.cpp \
 ../src/HttpResponse.cpp \
+../src/HttpValidator.cpp \
 ../src/Main.cpp \
 ../src/MimeTypes.cpp \
 ../src/Resource.cpp \
@@ -30,6 +31,7 @@ OBJS += \
 ./src/HttpProcessor.o \
 ./src/HttpRequest.o \
 ./src/HttpResponse.o \
+./src/HttpValidator.o \
 ./src/Main.o \
 ./src/MimeTypes.o \
 ./src/Resource.o \
@@ -47,6 +49,7 @@ CPP_DEPS += \
 ./src/HttpProcessor.d \
 ./src/HttpRequest.d \
 ./src/HttpResponse.d \
+./src/HttpValidator.d \
 ./src/Main.d \
 ./src/MimeTypes.d \
 ./src/Resource.d \

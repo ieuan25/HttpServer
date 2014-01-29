@@ -23,18 +23,14 @@
 
 /*
  * TODO:
- * Clean up HTTP Request class
+ * Clean up Config/MimeType + String operations
  * Use smart pointers to fix double de-allocation
- * Read up on C++ templates
- * Read up on signal handling and find bug, virtual destrcutors and when to use them and also the const SocketInterfaces
  */
 
 #include "MimeTypes.h"
 using namespace std;
 
 #define CONF_PATH "/etc/HttpTwo/Http.conf"
-
-typedef int Fork();
 
 int ForkNewProcess();
 void Daemonise();
@@ -61,10 +57,10 @@ int main(int argc, char* argv[])
 	try
 	{
 		TCPConnection connection(config["port"], config["max_connections"]);
-		connection.bindtoaddr();
+		connection.BindToAddress();
 		while(1)
 		{
-			client_socket = connection.getclientsock();
+			client_socket = connection.GetClientSocket();
 			if ((pid = ForkNewProcess()) == 0)
 			{
 				syslog(LOG_DEBUG, "Http process %d created", getpid());

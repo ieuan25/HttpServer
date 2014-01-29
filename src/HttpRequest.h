@@ -13,6 +13,7 @@
 #include <vector>
 #include <stdexcept>
 #include "SockInterface.h"
+#include "HttpValidator.h"
 
 enum ResourceType { STATIC, CGI_POST, CGI_GET };
 
@@ -22,23 +23,23 @@ public:
 	~HttpRequest();
 	void Read(SockInterface& socketInterface, int timeout);
 	std::string GetRequestHeader(const std::string&);
-	std::string GetRequestedResourcePath() { return requested_resource; }
-	std::string GetRawRequest() { return raw_request; };
-	std::string GetPOSTData() { return post_data; };
-	std::string GetGETData() { return get_data; };
+	std::string GetRequestedResourcePath() { return resource_path; }
+	std::string GetRequestData() { return request_data; };
 	ResourceType GetResourceType() { return resource_type; };
 
 private:
-	void Validate();
+	std::string FindRequestedResourcePath(const std::string&);
 	void SetRequestValues();
-	std::vector<std::string> status_line;
+	std::string GetRequestedResource();
+	std::string FindRequestParametersIfNotStatic(ResourceType res_type, const std::string& res_path);
+	ResourceType FindRequestedResourceType(const std::string& http_method, const std::string& resource_string);
+	std::vector<std::string> http_status_elements;
 	std::vector<std::string> request_lines;
-	std::string raw_request;
-	std::string requested_resource;
+	std::string resource_path;
 	std::string http_version;
-	std::string post_data;
-	std::string get_data;
+	std::string request_data;
 	ResourceType resource_type;
+	HttpValidator *request_validator;
 	std::map<std::string,std::string> headers;
 };
 
