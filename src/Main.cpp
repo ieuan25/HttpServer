@@ -34,10 +34,12 @@ using namespace std;
 
 int ForkNewProcess();
 void Daemonise();
-void HandleSigChld(int);
+void HandleSigChld();
 
 int main(int argc, char* argv[])
 {
+	HandleSigChld();
+
 	Config conf(CONF_PATH);
 	map<string, string> config = conf.ReadConfig();
 	MimeTypeConf mime_type_config(config["mime_path"].c_str());
@@ -45,9 +47,6 @@ int main(int argc, char* argv[])
 
 	if (conf.GetConfigItems().at("daemon").compare("yes") == 0)
 		Daemonise();
-
-	if (signal(SIGCHLD, HandleSigChld) == SIG_ERR)
-			syslog(LOG_ERR, "Could not register signal handler for SIGCHILD");
 
 	openlog(NULL, LOG_PID, LOG_USER);
 	syslog(LOG_INFO, "Server has started.");
@@ -124,25 +123,14 @@ void Daemonise()
 		throw runtime_error("File descriptors not correctly set");
 }
 
-void HandleSigChld(int SIG)
+void HandleSigChld()
 {
-	int old_err = errno;
-
-	if (signal(SIGCHLD, HandleSigChld) == SIG_ERR)
-				syslog(LOG_ERR, "Could not register signal handler for SIGCHILD");
-
-	if (SIG == SIGCHLD)
-	{
-		int child_status;
-		int child_pid;
-
-		if ((child_pid = wait(&child_status)) < 0)
-			throw runtime_error(strerror(errno));
-
-		syslog(LOG_DEBUG, "Http process %d exiting", child_pid);
-	}
-
-	errno = old_err;
+	struct sigaction sig_act;
+	sig_act.sa_handler = SIG_DFL;
+	sigemptyset(&sig_act.sa_mask);
+	sig_act.sa_flags = SA_NOCLDWAIT;
+	if (sigaction(SIGCHLD, &sig_act, NULL) < 0)
+		syslog(LOG_ERR, "Could not register signal handler for SIGCHILD");
 }
 
 int ForkNewProcess()
