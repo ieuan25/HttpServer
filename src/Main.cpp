@@ -30,7 +30,7 @@
 #include "MimeTypes.h"
 using namespace std;
 
-#define CONF_PATH "/etc/HttpTwo/Http.conf"
+#define CONF_PATH "/home/kybu/Code/HttpServer/Http.conf"
 
 int ForkNewProcess();
 void Daemonise();
@@ -123,12 +123,18 @@ void Daemonise()
 		throw runtime_error("File descriptors not correctly set");
 }
 
+/* Handler does nothing at the moment. Just demonstrating that a system call
+ * can be interrupted.  */
+void sigchldHandler(int sigNum)
+{
+}
+
 void HandleSigChld()
 {
 	struct sigaction sig_act;
-	sig_act.sa_handler = SIG_DFL;
-	sigemptyset(&sig_act.sa_mask);
-	sig_act.sa_flags = SA_NOCLDWAIT;
+	sig_act.sa_handler = sigchldHandler;
+	sigfillset(&sig_act.sa_mask); // Important, blocking all signals while the handler runs.
+	sig_act.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT;
 	if (sigaction(SIGCHLD, &sig_act, NULL) < 0)
 		syslog(LOG_ERR, "Could not register signal handler for SIGCHILD");
 }
