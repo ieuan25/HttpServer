@@ -1,6 +1,6 @@
 //============================================================================
 // Name        : HttpTwo.cpp
-// Author      : 
+// Author      :
 // Version     :
 // Copyright   : Your copyright notice
 // Description : Hello World in C++, Ansi-style
@@ -30,11 +30,20 @@
 #include "MimeTypes.h"
 using namespace std;
 
-#define CONF_PATH "/home/kybu/Code/HttpServer/Http.conf"
+#define CONF_PATH "/etc/HttpTwo/Http.conf"
 
 int ForkNewProcess();
 void Daemonise();
 void HandleSigChld();
+
+
+typedef struct {
+	sig_atomic_t child_pid;
+	sig_atomic_t child_status;
+} child_process_status;
+
+volatile sig_atomic_t child_terminated = 0;
+child_process_status chld_status;
 
 int main(int argc, char* argv[])
 {
@@ -49,7 +58,7 @@ int main(int argc, char* argv[])
 		Daemonise();
 
 	openlog(NULL, LOG_PID, LOG_USER);
-	syslog(LOG_INFO, "Server has started.");
+	syslog(LOG_INFO, "Server has started. Listening on port %d", config["port"]);
 	int client_socket;
 	int pid;
 
@@ -59,6 +68,12 @@ int main(int argc, char* argv[])
 		connection.BindToAddress();
 		while(1)
 		{
+			if (child_terminated)
+			{
+				syslog(LOG_WARNING, "Child process with pid %d terminated with status %d", chld_status.child_pid, chld_status.child_status);
+				child_terminated = 0;
+			}
+
 			client_socket = connection.GetClientSocket();
 			if ((pid = ForkNewProcess()) == 0)
 			{
@@ -127,6 +142,20 @@ void Daemonise()
  * can be interrupted.  */
 void sigchldHandler(int sigNum)
 {
+	int old_errno = errno;
+	HandleSigChld();
+	int pid;
+	int status;
+
+	if ((pid = wait(&status)) < 0)
+		throw runtime_error(strerror(errno));
+
+	child_terminated = 1;
+	chld_status.child_pid = pid;
+	chld_status.child_status = status;
+
+	errno = old_errno;
+
 }
 
 void HandleSigChld()
@@ -134,7 +163,7 @@ void HandleSigChld()
 	struct sigaction sig_act;
 	sig_act.sa_handler = sigchldHandler;
 	sigfillset(&sig_act.sa_mask); // Important, blocking all signals while the handler runs.
-	sig_act.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT;
+	sig_act.sa_flags = SA_NOCLDSTOP | SA_RESTART;
 	if (sigaction(SIGCHLD, &sig_act, NULL) < 0)
 		syslog(LOG_ERR, "Could not register signal handler for SIGCHILD");
 }
