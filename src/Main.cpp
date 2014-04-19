@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 		Daemonise();
 
 	openlog(NULL, LOG_PID, LOG_USER);
-	syslog(LOG_INFO, "Server has started. Listening on port %d", config["port"]);
+	syslog(LOG_INFO, "Server has started. Listening on port %s", config["port"].c_str());
 	int client_socket;
 	int pid;
 
