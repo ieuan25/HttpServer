@@ -40,6 +40,7 @@ typedef struct {
 
 typedef struct {
 	int version;
+	int help;
 	char conf_path[64];
 } options;
 
@@ -56,9 +57,17 @@ int main(int argc, char* argv[])
 	options http_opts;
 	strcpy(http_opts.conf_path, DEFAULT_CONF_PATH);
 	http_opts.version = 0;
+	http_opts.help = 0;
 
 	ParseOpts(argc, argv, http_opts);
 
+	if (http_opts.help == 1)
+	{
+		cout << "HttpServer help" << endl;
+		cout << "-v	prints version" <<endl;
+		cout << "-c	specify the path to the config file" <<endl;
+		exit(0);
+	}
 	if (http_opts.version == 1)
 	{
 		cout << VERSION << endl;
@@ -119,12 +128,15 @@ void ParseOpts(int argc, char* argv[], options& options)
 	int ret;
 	opterr = 0;
 
-	while ((ret = getopt(argc, argv, "vc:")) != -1)
+	while ((ret = getopt(argc, argv, "vhc:")) != -1)
 	{
 		switch(ret)
 		{
 			case 'v':
 				options.version = 1;
+				break;
+			case 'h':
+				options.help = 1;
 				break;
 			case 'c':
 				strcpy(options.conf_path,optarg);
