@@ -50,7 +50,7 @@ child_process_status chld_status;
 int ForkNewProcess();
 void Daemonise();
 void HandleSigChld();
-void ParseOpts(int argc, char* argv[], options& options);
+int ParseOpts(int argc, char* argv[], options& options);
 
 int main(int argc, char* argv[])
 {
@@ -59,7 +59,8 @@ int main(int argc, char* argv[])
 	http_opts.version = 0;
 	http_opts.help = 0;
 
-	ParseOpts(argc, argv, http_opts);
+	if (ParseOpts(argc, argv, http_opts) == -1)
+		exit(0);
 
 	if (http_opts.help == 1)
 	{
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-void ParseOpts(int argc, char* argv[], options& options)
+int ParseOpts(int argc, char* argv[], options& options)
 {
 	int ret;
 	opterr = 0;
@@ -141,10 +142,14 @@ void ParseOpts(int argc, char* argv[], options& options)
 			case 'c':
 				strcpy(options.conf_path,optarg);
 				break;
+			case '?':
+				cerr << "Option " << (char) optopt << " requires an argument" << endl;
+				return -1;
 			default:
 				break;
 		}
 	}
+	return 0;
 }
 
 void Daemonise()
