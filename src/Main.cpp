@@ -30,26 +30,43 @@
 #include "MimeTypes.h"
 using namespace std;
 
-#define CONF_PATH "/etc/HttpTwo/Http.conf"
-
-int ForkNewProcess();
-void Daemonise();
-void HandleSigChld();
-
+#define DEFAULT_CONF_PATH "/etc/HttpTwo/Http.conf"
+#define VERSION "HttpServer 1.0"
 
 typedef struct {
 	sig_atomic_t child_pid;
 	sig_atomic_t child_status;
 } child_process_status;
 
+typedef struct {
+	int version;
+	char conf_path[64];
+} options;
+
 volatile sig_atomic_t child_terminated = 0;
 child_process_status chld_status;
 
+int ForkNewProcess();
+void Daemonise();
+void HandleSigChld();
+void ParseOpts(int argc, char* argv[], options& options);
+
 int main(int argc, char* argv[])
 {
-	HandleSigChld();
+	options http_opts;
+	strcpy(http_opts.conf_path, DEFAULT_CONF_PATH);
+	http_opts.version = 0;
 
-	Config conf(CONF_PATH);
+	ParseOpts(argc, argv, http_opts);
+
+	if (http_opts.version == 1)
+	{
+		cout << VERSION << endl;
+		exit(0);
+	}
+
+	HandleSigChld();
+	Config conf(http_opts.conf_path);
 	map<string, string> config = conf.ReadConfig();
 	MimeTypeConf mime_type_config(config["mime_path"].c_str());
 	map<string, string> mime_type_map = mime_type_config.ReadConfig();
@@ -95,6 +112,27 @@ int main(int argc, char* argv[])
 	}
 
 	return 0;
+}
+
+void ParseOpts(int argc, char* argv[], options& options)
+{
+	int ret;
+	opterr = 0;
+
+	while ((ret = getopt(argc, argv, "vc:")) != -1)
+	{
+		switch(ret)
+		{
+			case 'v':
+				options.version = 1;
+				break;
+			case 'c':
+				strcpy(options.conf_path,optarg);
+				break;
+			default:
+				break;
+		}
+	}
 }
 
 void Daemonise()
