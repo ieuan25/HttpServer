@@ -10,6 +10,7 @@
 #include <sstream>
 #include "Helpers.h"
 #include "StringOperations.h"
+#include <syslog.h>
 
 using namespace std;
 
@@ -55,7 +56,8 @@ int TCPConnection::BindToAddress()
 int TCPConnection::GetClientSocket()
 {
 	int clientsockfd = accept(sockfd, NULL, NULL);
-	if (clientsockfd == -1)
+
+	if (clientsockfd == -1 && errno != EINTR)
 		throw std::runtime_error(strerror(errno));
 
 	return clientsockfd;

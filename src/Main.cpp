@@ -17,6 +17,7 @@
 #include <sys/wait.h>
 #include "TCPConnection.h"
 #include "HttpProcessor.h"
+#include "StringOperations.h"
 #include "Config.h"
 #include <syslog.h>
 #include <fcntl.h>
@@ -33,10 +34,6 @@ using namespace std;
 #define DEFAULT_CONF_PATH "/etc/HttpTwo/Http.conf"
 #define VERSION "HttpServer 1.0"
 
-typedef struct {
-	sig_atomic_t child_pid;
-	sig_atomic_t child_status;
-} child_process_status;
 
 typedef struct {
 	int version;
@@ -44,13 +41,15 @@ typedef struct {
 	char conf_path[64];
 } options;
 
-volatile sig_atomic_t child_terminated = 0;
-child_process_status chld_status;
+volatile sig_atomic_t children_terminated = 0;
 
 int ForkNewProcess();
 void Daemonise();
-void HandleSigChld();
+void SetupChldHandler();
+void RecoverTerminatedChildren();
 int ParseOpts(int argc, char* argv[], options& options);
+void SetupAlrmHandler();
+void sigalarmHandler(int c);
 
 int main(int argc, char* argv[])
 {
@@ -75,31 +74,34 @@ int main(int argc, char* argv[])
 		exit(0);
 	}
 
-	HandleSigChld();
-	Config conf(http_opts.conf_path);
-	map<string, string> config = conf.ReadConfig();
-	MimeTypeConf mime_type_config(config["mime_path"].c_str());
-	map<string, string> mime_type_map = mime_type_config.ReadConfig();
-
-	if (conf.GetConfigItems().at("daemon").compare("yes") == 0)
-		Daemonise();
-
-	openlog(NULL, LOG_PID, LOG_USER);
-	syslog(LOG_INFO, "Server has started. Listening on port %s", config["port"].c_str());
-	int client_socket;
-	int pid;
-
 	try
 	{
+		int client_socket;
+		int pid;
+
+		Config conf(http_opts.conf_path);
+		map<string, string> config = conf.ReadConfig();
+		MimeTypeConf mime_type_config(config["mime_path"].c_str());
+		map<string, string> mime_type_map = mime_type_config.ReadConfig();
+		const int sock_acc_timeout = StringOperations::StringToInt(config["accept_timeout"]);
+
+		SetupChldHandler();
+		SetupAlrmHandler();
+
+		if (conf.GetConfigItems().at("daemon").compare("yes") == 0)
+			Daemonise();
+
+		openlog(NULL, LOG_PID, LOG_USER);
+		syslog(LOG_INFO, "Server has started. Listening on port %s", config["port"].c_str());
+
 		TCPConnection connection(config["port"], config["max_connections"]);
 		connection.BindToAddress();
+
 		while(1)
 		{
-			if (child_terminated)
-			{
-				syslog(LOG_WARNING, "Child process with pid %d terminated with status %d", chld_status.child_pid, chld_status.child_status);
-				child_terminated = 0;
-			}
+			alarm(sock_acc_timeout);
+			if (children_terminated)
+				RecoverTerminatedChildren();
 
 			client_socket = connection.GetClientSocket();
 			if ((pid = ForkNewProcess()) == 0)
@@ -113,6 +115,7 @@ int main(int argc, char* argv[])
 			{
 				close(client_socket);
 			}
+			alarm(0);
 		}
 	}
 	catch(exception& e)
@@ -193,27 +196,43 @@ void Daemonise()
 		throw runtime_error("File descriptors not correctly set");
 }
 
-/* Handler does nothing at the moment. Just demonstrating that a system call
- * can be interrupted.  */
+/* Signal handlers  */
 void sigchldHandler(int sigNum)
 {
-	int old_errno = errno;
-	HandleSigChld();
+	SetupChldHandler();
+	children_terminated++;
+}
+
+void sigalarmHandler(int sigNum)
+{
+	SetupAlrmHandler();
+}
+
+void RecoverTerminatedChildren()
+{
 	int pid;
 	int status;
 
-	if ((pid = wait(&status)) < 0)
-		throw runtime_error(strerror(errno));
-
-	child_terminated = 1;
-	chld_status.child_pid = pid;
-	chld_status.child_status = status;
-
-	errno = old_errno;
+	while (children_terminated > 0)
+	{
+		if ((pid = wait(&status)) < 0)
+			throw runtime_error(strerror(errno));
+		children_terminated--;
+		syslog(LOG_WARNING, "Child process with pid %d terminated with status %d", pid, status);
+	}
 
 }
 
-void HandleSigChld()
+void SetupAlrmHandler()
+{
+	struct sigaction sig_act;
+	sig_act.sa_handler = sigalarmHandler;
+	sigfillset(&sig_act.sa_mask);
+	if (sigaction(SIGALRM, &sig_act, NULL) < 0)
+		syslog(LOG_ERR, "Could not register signal handler for SIGALARM");
+}
+
+void SetupChldHandler()
 {
 	struct sigaction sig_act;
 	sig_act.sa_handler = sigchldHandler;
