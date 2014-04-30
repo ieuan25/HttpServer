@@ -228,6 +228,16 @@ void SetupAlrmHandler()
 	struct sigaction sig_act;
 	sig_act.sa_handler = sigalarmHandler;
 	sigfillset(&sig_act.sa_mask);
+
+	// IMPORTANT!!! sig_act field values are undefined until they are explicitly
+	// initialised. In other words they might contain rubbish.
+	// This applies to any struct, variable, etc in C/C++ if no value is assigned to it.
+	// In my case not setting sa_flags caused alarm signal not being delivered.
+	// I am guessing that its rubbish value actually set SA_RESTART.
+	//
+	// After I added this line it started working as expected.
+	sig_act.sa_flags = 0;
+
 	if (sigaction(SIGALRM, &sig_act, NULL) < 0)
 		syslog(LOG_ERR, "Could not register signal handler for SIGALARM");
 }

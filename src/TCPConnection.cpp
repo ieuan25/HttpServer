@@ -57,6 +57,13 @@ int TCPConnection::GetClientSocket()
 {
 	int clientsockfd = accept(sockfd, NULL, NULL);
 
+	if (errno == EINTR)
+		syslog(LOG_INFO,
+			// I hope you will explain me what is happening at next line ;)
+			// It is just an example, it can be done (and has to) better in the context of using the syslog call
+			// so don't go ahead doing it this way everywhere.
+			(string("accept system call in ") + __PRETTY_FUNCTION__  + " was interrupted by a signal.").c_str());
+
 	if (clientsockfd == -1 && errno != EINTR)
 		throw std::runtime_error(strerror(errno));
 
