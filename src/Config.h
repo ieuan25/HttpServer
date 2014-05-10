@@ -19,6 +19,7 @@ public:
 	virtual std::map<std::string, std::string> ReadConfig();
 	bool IsValid() { return !config_items.empty(); };
 	std::map<std::string, std::string> GetConfigItems() {return config_items;};
+	void SetConfigItem(std::string key, std::string val);
 private:
 protected:
 	std::vector<std::string> GetConfigLines(const std::string& raw_config);

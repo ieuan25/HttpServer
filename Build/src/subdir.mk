@@ -16,6 +16,8 @@ CPP_SRCS += \
 ../src/HttpValidator.cpp \
 ../src/Main.cpp \
 ../src/MimeTypes.cpp \
+../src/OptionParser.cpp \
+../src/ProcessOperations.cpp \
 ../src/Resource.cpp \
 ../src/SockInterface.cpp \
 ../src/StringOperations.cpp \
@@ -34,6 +36,8 @@ OBJS += \
 ./src/HttpValidator.o \
 ./src/Main.o \
 ./src/MimeTypes.o \
+./src/OptionParser.o \
+./src/ProcessOperations.o \
 ./src/Resource.o \
 ./src/SockInterface.o \
 ./src/StringOperations.o \
@@ -52,6 +56,8 @@ CPP_DEPS += \
 ./src/HttpValidator.d \
 ./src/Main.d \
 ./src/MimeTypes.d \
+./src/OptionParser.d \
+./src/ProcessOperations.d \
 ./src/Resource.d \
 ./src/SockInterface.d \
 ./src/StringOperations.d \
@@ -62,7 +68,7 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I"/home/ieuan/workspace/HttpServer/src" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -O3 -Wall -c -fmessage-length=0 -std=c++11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

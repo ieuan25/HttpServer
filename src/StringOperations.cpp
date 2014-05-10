@@ -41,6 +41,18 @@ map<string, string> StringOperations::MapStrings(const vector<string>&elements, 
 	return ret_map;
 }
 
+int StringOperations::CharToInt(const char* cp)
+{
+	char to_convert = *cp;
+	int ival = (int)to_convert;
+	return ival - (int)'0';
+}
+
+bool StringOperations::Isset(const char* cp)
+{
+	return *cp != '\0';
+}
+
 
 string StringOperations::Trim(string& string)
 {

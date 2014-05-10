@@ -23,11 +23,12 @@ typedef struct addrinfo addinfo;
 
 class TCPConnection {
 public:
-	TCPConnection(const std::string& port, const std::string& max_cons);
+	TCPConnection(const std::string& port, const std::string& max_cons, int sock_timeout);
 	~TCPConnection();
 	int BindToAddress();
 	int GetClientSocket();
 	std::string port;
+	int sock_timeout;
 
 private:
 	int err;

@@ -17,6 +17,8 @@ class StringOperations {
 public:
 	StringOperations();
 	static std::string Trim(std::string&);
+	static int CharToInt(const char* c);
+	static bool Isset(const char* c);
 	static int StringToInt(const std::string&);
 	static std::string GetFirstLine(const std::string&);
 	static std::string IntToString(int);

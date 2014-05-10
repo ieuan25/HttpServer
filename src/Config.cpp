@@ -19,6 +19,11 @@ Config::Config(const char * config_path) {
 	strcpy(path, config_path);
 }
 
+void Config::SetConfigItem(string k, string v){
+
+	config_items[k] = v;
+}
+
 std::map<std::string, std::string> Config::ReadConfig(){
 
 	string raw_file = Helpers::ReadFile(path);

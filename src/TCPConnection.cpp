@@ -14,7 +14,7 @@
 
 using namespace std;
 
-TCPConnection::TCPConnection(const string& port, const string& max_cons) : port(port)
+TCPConnection::TCPConnection(const string& port, const string& max_cons, int sock_timeout) : port(port), sock_timeout(sock_timeout)
 {
 	addinfo *addrlist;
 	addinfo hints;
@@ -55,14 +55,12 @@ int TCPConnection::BindToAddress()
 
 int TCPConnection::GetClientSocket()
 {
+	alarm(sock_timeout);
 	int clientsockfd = accept(sockfd, NULL, NULL);
+	alarm(0);
 
 	if (errno == EINTR)
-		syslog(LOG_INFO,
-			// I hope you will explain me what is happening at next line ;)
-			// It is just an example, it can be done (and has to) better in the context of using the syslog call
-			// so don't go ahead doing it this way everywhere.
-			(string("accept system call in ") + __PRETTY_FUNCTION__  + " was interrupted by a signal.").c_str());
+		syslog(LOG_INFO,(string("accept system call in ") + __PRETTY_FUNCTION__  + string(" was interrupted by a signal.")).c_str());
 
 	if (clientsockfd == -1 && errno != EINTR)
 		throw std::runtime_error(strerror(errno));
