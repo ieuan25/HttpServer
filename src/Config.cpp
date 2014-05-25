@@ -15,7 +15,7 @@
 
 using namespace std;
 
-Config::Config(const char * config_path) {
+Config::Config(const char * config_path, http_options& opts) : opts(opts){
 	strcpy(path, config_path);
 }
 
@@ -24,11 +24,26 @@ void Config::SetConfigItem(string k, string v){
 	config_items[k] = v;
 }
 
+void Config::OverwriteConfigWithOptions(){
+
+	if (StringOperations::Isset(opts.daemon))
+		config_items["daemon"] = opts.daemon;
+	if (StringOperations::Isset(opts.errors))
+		config_items["errors"] = opts.errors;
+	if (StringOperations::Isset(opts.ht_docs))
+		config_items["htdocs"] = opts.ht_docs;
+	if (StringOperations::Isset(opts.portnum))
+		config_items["port"] = opts.port_num;
+	if (StringOperations::Isset(opts.max_cons))
+		config_items["max_connections"] = opts.max_cons;
+}
+
 std::map<std::string, std::string> Config::ReadConfig(){
 
 	string raw_file = Helpers::ReadFile(path);
 	vector<string> config = GetConfigLines(raw_file);
 	config_items = StringOperations::MapStrings(config, '=');
+	OverwriteConfigWithOptions();
 	return config_items;
 }
 

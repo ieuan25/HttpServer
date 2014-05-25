@@ -11,6 +11,7 @@
 #include "Helpers.h"
 #include "StringOperations.h"
 #include <syslog.h>
+#include <sys/select.h>
 
 using namespace std;
 
@@ -53,19 +54,32 @@ int TCPConnection::BindToAddress()
 	return err;
 }
 
-int TCPConnection::GetClientSocket()
+int TCPConnection::AcceptClient()
 {
-	alarm(sock_timeout);
-	int clientsockfd = accept(sockfd, NULL, NULL);
-	alarm(0);
+	syslog(LOG_INFO, "Attempting to accept client connection...");
 
-	if (errno == EINTR)
-		syslog(LOG_INFO,(string("accept system call in ") + __PRETTY_FUNCTION__  + string(" was interrupted by a signal.")).c_str());
+	fd_set write_set;
+	FD_ZERO(&write_set);
+	FD_SET(sockfd, &write_set);
 
-	if (clientsockfd == -1 && errno != EINTR)
-		throw std::runtime_error(strerror(errno));
+	timeval tval;
+	tval.tv_sec = sock_timeout;
+	tval.tv_usec = 0;
 
-	return clientsockfd;
+	int select_ret = 0;
+
+	if ((select_ret = select(sockfd+1, &write_set, NULL, NULL, &tval)) > 0)
+	{
+		syslog(LOG_INFO, "Client found ready to connect.");
+		int client_sock = accept(sockfd, NULL, NULL);
+
+		if (client_sock == -1 && errno != EINTR)
+			throw std::runtime_error(strerror(errno));
+
+		return client_sock;
+	}
+	syslog(LOG_INFO, "No waiting clients found.");
+	return -1;
 }
 
 TCPConnection::~TCPConnection() {

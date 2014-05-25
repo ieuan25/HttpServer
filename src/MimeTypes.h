@@ -15,7 +15,7 @@
 
 class MimeTypeConf : public Config {
 public:
-	MimeTypeConf(const char * path);
+	MimeTypeConf(const char * path, http_options& opts);
 	~MimeTypeConf();
 	std::map<std::string, std::string> ReadConfig();
 protected:

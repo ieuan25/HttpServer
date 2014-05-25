@@ -11,9 +11,9 @@
 #include <stdexcept>
 #include <string>
 
-class read_timeout: std::runtime_error {
+class socket_timeout: std::runtime_error {
 public:
-	read_timeout(const std::string& message);
+	socket_timeout(const std::string& message);
 };
 
 class file_not_found: std::runtime_error {

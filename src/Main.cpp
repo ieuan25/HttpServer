@@ -31,13 +31,11 @@ using namespace std;
 #define DEFAULT_CONF_PATH "/etc/HttpTwo/Http.conf"
 #define VERSION "HttpServer 1.0"
 
-
 volatile sig_atomic_t children_terminated = 0;
-
-void OverwriteConfigWithOptions(http_options& o, map<string, string>& c);
-void SetupChldHandler();
-void SetupAlrmHandler();
-void sigalarmHandler(int c);
+void InitialiseServer(map<string, string>& config);
+void SetupSigChildHandler();
+void PrintHelpAndExit();
+void PrintVersionAndExit();
 
 int main(int argc, char* argv[])
 {
@@ -45,50 +43,41 @@ int main(int argc, char* argv[])
 	{
 		int client_socket;
 		int pid;
-		OptionParser opt_parser(argc, argv);
-		cout << "About to read options "<<endl;
-		http_options opts;
-		if (opt_parser.Parse(opts) < 0)
-		{
-			cout << "Failure parsing arguments. Exiting." << endl;
-			exit(1);
-		}
-
 		char conf_path[128];
+		OptionParser opt_parser(argc, argv);
+		http_options opts;
+
+		if (opt_parser.Parse(opts) < 0)
+			exit(1);
+
+		if (opts.help == 1)
+			PrintHelpAndExit();
+
+		if (opts.version == 1)
+			PrintVersionAndExit();
 
 		if (StringOperations::Isset(opts.conf_path))
 			strcpy(conf_path, opts.conf_path);
 		else
 			strcpy(conf_path, DEFAULT_CONF_PATH);
 
-		Config conf(conf_path);
+		Config conf(conf_path, opts);
 		map<string, string> config = conf.ReadConfig();
-		OverwriteConfigWithOptions(opts, config);
-		MimeTypeConf mime_type_config(config["mime_path"].c_str());
+
+		MimeTypeConf mime_type_config(config["mime_path"].c_str(), opts);
 		map<string, string> mime_type_map = mime_type_config.ReadConfig();
 
-		const int sock_acc_timeout = StringOperations::StringToInt(config["accept_timeout"]);
+		InitialiseServer(config);
 
-		SetupChldHandler();
-		SetupAlrmHandler();
-
-		if (config["daemon"].compare("yes") == 0)
-		{
-			cout << "Daemonising" << endl;
-			ProcessOperations::Daemonise();
-		}
-		openlog(NULL, LOG_PID, LOG_USER);
-		syslog(LOG_INFO, "Server has started. Listening on port %s", config["port"].c_str());
-
-		TCPConnection connection(config["port"], config["max_connections"], sock_acc_timeout);
+		TCPConnection connection(config["port"], config["max_connections"], StringOperations::StringToInt(config["accept_timeout"]));
 		connection.BindToAddress();
 
 		while(1)
 		{
 			ProcessOperations::RecoverTerminatedChildren();
 
-			client_socket = connection.GetClientSocket();
-			if (client_socket != -1)
+			client_socket = connection.AcceptClient();
+			if (client_socket > -1)
 			{
 				if ((pid = ProcessOperations::ForkNewProcess()) == 0)
 				{
@@ -113,45 +102,45 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-void OverwriteConfigWithOptions(http_options& opts, map<string,string>& conf){
+void InitialiseServer(map<string, string>& config){
 
-	if (StringOperations::Isset(opts.daemon))
-	{
-		conf["daemon"] = opts.daemon;
-		cout << "Set daemon in conf to " << conf["daemon"] << endl;
-	}
-	if (StringOperations::Isset(opts.errors))
-		conf["errors"] = opts.errors;
-	if (StringOperations::Isset(opts.ht_docs))
-		conf["htdocs"] = opts.ht_docs;
-	if (StringOperations::Isset(opts.portnum))
-		conf["port"] = opts.port_num;
+	if (config["daemon"].compare("yes") == 0)
+		ProcessOperations::Daemonise();
+
+	SetupSigChildHandler();
+
+	openlog(NULL, LOG_PID, LOG_USER);
+	syslog(LOG_INFO, "Server has started. Listening on port %s", config["port"].c_str());
+}
+
+void PrintHelpAndExit(){
+
+	cout << "Usage HttpServer [OPTIONS]"<<endl;
+	cout << "GNU long option"<<"\t\t\t\t"<<"Meaning"<<endl;
+	cout << "--version"<<"\t\t\t\t"<<"prints version info"<<endl;
+	cout << "--daemon[=yes/no]"<<"\t\t\t"<<"allows server to run as a daemon"<<endl;
+	cout << "--confpath[=/etc/HttpConf.conf]"<<"\t\t"<<"sets the config file location"<<endl;
+	cout << "--portnum[=80]"<<"\t\t\t\t"<<"sets the port number that the server listens for connections on"<<endl;
+	cout << "--maxcons[=10]"<<"\t\t\t\t"<<"sets the maximum number of client connections to allow at any one time"<<endl;
+	cout << "--htdocs[=/var/htdocs]"<<"\t\t\t"<<"sets the htdocs directory location"<<endl;
+	cout << "--errors[=/var/errors]"<<"\t\t\t"<<"sets the error pages directory location"<<endl;
+	exit(0);
+}
+
+void PrintVersionAndExit(){
+
+	cout << VERSION << endl;
+	exit(0);
 }
 
 /* Signal handlers  */
 void sigchldHandler(int sigNum)
 {
-	SetupChldHandler();
+	SetupSigChildHandler();
 	children_terminated++;
 }
 
-void sigalarmHandler(int sigNum)
-{
-	SetupAlrmHandler();
-}
-
-void SetupAlrmHandler()
-{
-	struct sigaction sig_act;
-	sig_act.sa_handler = sigalarmHandler;
-	sigfillset(&sig_act.sa_mask);
-	memset(&sig_act.sa_flags, '\0', sizeof(sig_act.sa_flags));
-
-	if (sigaction(SIGALRM, &sig_act, NULL) < 0)
-		syslog(LOG_ERR, "Could not register signal handler for SIGALARM");
-}
-
-void SetupChldHandler()
+void SetupSigChildHandler()
 {
 	struct sigaction sig_act;
 	sig_act.sa_handler = sigchldHandler;

@@ -10,6 +10,7 @@
 #include "Exceptions.h"
 #include "Helpers.h"
 #include "StringOperations.h"
+#include <sys/select.h>
 
 using namespace std;
 
@@ -28,7 +29,20 @@ void SockInterface::Read(string &request, const int max_bytes, int timeout)
 	int bytesRead;
 	char buff[max_bytes];
 
-	PollSocket(timeout);
+	fd_set read_set;
+	FD_ZERO(&read_set);
+	FD_SET(socket_fd, &read_set);
+
+	timeval tval;
+	tval.tv_sec = timeout;
+	tval.tv_usec = 0;
+
+	int select_result = 0;
+
+	if ((select_result = select(socket_fd+1, &read_set, NULL, NULL, &tval)) < 0)
+		throw runtime_error("Select error");
+	else if (select_result == 0)
+		throw socket_timeout("Read timeout.");
 
 	if ((bytesRead = read(socket_fd, buff, max_bytes)) > 0)
 	{
@@ -49,28 +63,25 @@ void SockInterface::Read(string &request, const int max_bytes, int timeout)
 	request = buff;
 }
 
-void SockInterface::PollSocket(int timeout)
-{
-	struct pollfd readpoll;
-	int pollResult = 0;
-
-	readpoll.fd = socket_fd;
-	readpoll.events = POLLIN;
-
-	if ((pollResult = poll(&readpoll, 1, timeout*1000)) < 0)
-	{
-		throw runtime_error("Error polling socket");
-	}
-	else if (pollResult == 0)
-	{
-		throw read_timeout("timeout");
-	}
-}
-
 void SockInterface::Write(const string &response)
 {
 	unsigned int bytesWritten;
 	const char *raw_response = response.data();
+
+	fd_set write_set;
+	FD_ZERO(&write_set);
+	FD_SET(socket_fd, &write_set);
+
+	timeval tval;
+	tval.tv_sec = 5;
+	tval.tv_usec = 0;
+
+	int select_result = 0;
+
+	if ((select_result = select(socket_fd+1, NULL, &write_set, NULL, &tval)) < 0)
+		throw runtime_error("Select error");
+	else if (select_result == 0)
+		throw socket_timeout("Write timeout.");
 
 	if ((bytesWritten = write(socket_fd, raw_response, response.length())) > 0)
 	{

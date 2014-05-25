@@ -43,7 +43,6 @@ int OptionParser::Parse(http_options& options)
 				options.help = 1;
 				break;
 			case 'd':
-				std::cout << "daemon set to " << optarg << std::endl;
 				strcpy(options.daemon, optarg);
 				break;
 			case 'c':

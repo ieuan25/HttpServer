@@ -24,7 +24,6 @@ public:
 	void Read(std::string &buffer, const int max_bytes, int timeout);
 	void Write(const std::string &data);
 	void Close();
-	void PollSocket(int);
 	~SockInterface();
 	int socket_fd;
 

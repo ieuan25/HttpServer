@@ -45,7 +45,7 @@ void HttpProcessor::ProcessConnection()
 			delete httpRequest;
 		}
 	}
-	catch(read_timeout &e)
+	catch(socket_timeout &e)
 	{
 		syslog(LOG_DEBUG, "Persistent connection timed out - terminating.");
 	}

@@ -14,7 +14,7 @@
 
 using namespace std;
 
-MimeTypeConf::MimeTypeConf(const char * path) : Config(path) {}
+MimeTypeConf::MimeTypeConf(const char * path, http_options& opts) : Config(path, opts) {}
 
 std::map<std::string, std::string> MimeTypeConf::ReadConfig(){
 

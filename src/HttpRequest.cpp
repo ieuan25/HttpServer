@@ -42,9 +42,7 @@ string HttpRequest::FindRequestParametersIfNotStatic(ResourceType res_type, cons
 		if (StringOperations::Contains(res_path, "?"))
 			return StringOperations::Split(res_path, '?')[1];
 		else
-		{
 			throw runtime_error("CGI Get request must contain parameters");
-		}
 	}
 	if (res_type == CGI_POST)
 		return request_lines[request_lines.size()-1];
