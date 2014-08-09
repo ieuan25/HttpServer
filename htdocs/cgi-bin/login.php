@@ -8,12 +8,12 @@
 <body>
 <div class="login-card">
 	<h1>
-    <?php echo attempLogin($_POST['user'], $_POST['pass']);?>
+    <?php echo attemptLogin($_POST['user'], $_POST['pass']);?>
 	</h1>
 </div>
 
 <?php
-function attempLogin($username, $password)
+function attemptLogin($username, $password)
 {
    $myfile = fopen("authorised_users.txt", "r") or die("Unable to open file!");
    
@@ -22,7 +22,7 @@ function attempLogin($username, $password)
    		if (strcmp($userPass[0],$username) == 0 && strcmp($userPass[1], $password) == 0)
    		{
    			fclose($myfile);
-   			return "You are now logged in as " . $username . "!";;
+   			return "You are now logged in as " . $username . "!";
    		}
    }
 
