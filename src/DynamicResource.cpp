@@ -26,12 +26,10 @@ void DynamicResource::LoadContent()
 	FILE* in = popen(cmd, "r");
 
 	char buff[1024];
-	bool is_content = false;
+	cout << cmd << endl;
 	while(fgets(buff, 1024, in) != NULL)
 	{
-        string line = buff;
-		if (is_content) content += buff;
-        if (line.length() == 1) is_content = true;
+		content += buff;
 	}
 }
 

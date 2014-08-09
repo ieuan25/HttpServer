@@ -58,9 +58,9 @@ int TCPConnection::AcceptClient()
 {
 	syslog(LOG_INFO, "Attempting to accept client connection...");
 
-	fd_set write_set;
-	FD_ZERO(&write_set);
-	FD_SET(sockfd, &write_set);
+	fd_set read_set;
+	FD_ZERO(&read_set);
+	FD_SET(sockfd, &read_set);
 
 	timeval tval;
 	tval.tv_sec = sock_timeout;
@@ -68,7 +68,7 @@ int TCPConnection::AcceptClient()
 
 	int select_ret = 0;
 
-	if ((select_ret = select(sockfd+1, &write_set, NULL, NULL, &tval)) > 0)
+	if ((select_ret = select(sockfd+1, &read_set, NULL, NULL, &tval)) > 0)
 	{
 		syslog(LOG_INFO, "Client found ready to connect.");
 		int client_sock = accept(sockfd, NULL, NULL);
