@@ -6,6 +6,14 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
+/*
+ * TODO:
+ * Refactor and re-familiarise
+ * Clean up the CGI stuff - must be a better way
+ * Add a multi-threaded option - as opposed to using processes
+ * Try and use open-ssl to support https
+ */
+
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/resource.h>
@@ -13,6 +21,7 @@
 #include <cstring>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <stdio.h>
 #include <sys/wait.h>
 #include "TCPConnection.h"
@@ -23,6 +32,8 @@
 #include <fcntl.h>
 #include "OptionParser.h"
 #include "ProcessOperations.h"
+#include <boost/thread.hpp>
+#include <boost/date_time.hpp>
 
 
 #include "MimeTypes.h"
@@ -36,16 +47,32 @@ void InitialiseServer(map<string, string>& config);
 void SetupSigChildHandler();
 void PrintHelpAndExit();
 void PrintVersionAndExit();
+void HandleSignals();
+
+int fd[2]; // my pipe file descriptors, global so can pass to the signal handler
 
 int main(int argc, char* argv[])
 {
 	try
 	{
+        // Handle signals here
+		boost::thread myThread(HandleSignals);
+
+        // Ignore all signals here
+        sigset_t ignore_set;
+        sigfillset(&ignore_set);
+        sigprocmask(SIG_BLOCK, &ignore_set, NULL);
+
 		int client_socket;
 		int pid;
 		char conf_path[128];
 		OptionParser opt_parser(argc, argv);
 		http_options opts;
+
+        if (pipe(fd) < 0)
+        {
+            syslog(LOG_DEBUG, "Pipe error");
+        }
 
 		if (opt_parser.Parse(opts) < 0)
 			exit(1);
@@ -72,11 +99,11 @@ int main(int argc, char* argv[])
 		TCPConnection connection(config["port"], config["max_connections"], StringOperations::StringToInt(config["accept_timeout"]));
 		connection.BindToAddress();
 
-		while(1)
+        while(1)
 		{
 			ProcessOperations::RecoverTerminatedChildren();
 
-			client_socket = connection.AcceptClient();
+			client_socket = connection.AcceptClient(fd[0]);
 			if (client_socket > -1)
 			{
 				if ((pid = ProcessOperations::ForkNewProcess()) == 0)
@@ -92,6 +119,7 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
+		myThread.join();
 	}
 	catch(exception& e)
 	{
@@ -107,7 +135,7 @@ void InitialiseServer(map<string, string>& config){
 	if (config["daemon"].compare("yes") == 0)
 		ProcessOperations::Daemonise();
 
-	SetupSigChildHandler();
+	//SetupSigChildHandler();
 
 	openlog(NULL, LOG_PID, LOG_USER);
 	syslog(LOG_INFO, "Server has started. Listening on port %s", config["port"].c_str());
@@ -138,6 +166,19 @@ void sigchldHandler(int sigNum)
 {
 	SetupSigChildHandler();
 	children_terminated++;
+	write(fd[1], "T", 1);
+}
+
+void HandleSignals()
+{
+	SetupSigChildHandler();
+	syslog(LOG_ERR, "Doing some signal handling!!");
+	while(true)
+	{
+		boost::posix_time::seconds secs(5);
+		boost::this_thread::sleep(secs);
+	}
+
 }
 
 void SetupSigChildHandler()

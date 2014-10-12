@@ -26,7 +26,7 @@ public:
 	TCPConnection(const std::string& port, const std::string& max_cons, int sock_timeout);
 	~TCPConnection();
 	int BindToAddress();
-	int AcceptClient();
+	int AcceptClient(int);
 	std::string port;
 	int sock_timeout;
 

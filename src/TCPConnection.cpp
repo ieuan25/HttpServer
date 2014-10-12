@@ -54,22 +54,31 @@ int TCPConnection::BindToAddress()
 	return err;
 }
 
-int TCPConnection::AcceptClient()
+int TCPConnection::AcceptClient(int fd)
 {
 	syslog(LOG_INFO, "Attempting to accept client connection...");
 
 	fd_set read_set;
 	FD_ZERO(&read_set);
 	FD_SET(sockfd, &read_set);
+	FD_SET(fd, &read_set);
 
 	timeval tval;
-	tval.tv_sec = sock_timeout;
+	tval.tv_sec = 20; //sock_timeout set to something high to test signal handling;
 	tval.tv_usec = 0;
 
 	int select_ret = 0;
 
+	syslog(LOG_INFO, "Pipe fd = %d.", fd);
+	syslog(LOG_INFO, "Sock fd = %d.", sockfd);
 	if ((select_ret = select(sockfd+1, &read_set, NULL, NULL, &tval)) > 0)
 	{
+		if (FD_ISSET(fd, &read_set))
+		{
+			syslog(LOG_INFO, "Child terminated so stopping blocking in select.");
+			return -1;
+		}
+
 		syslog(LOG_INFO, "Client found ready to connect.");
 		int client_sock = accept(sockfd, NULL, NULL);
 
