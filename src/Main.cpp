@@ -32,8 +32,10 @@
 #include <fcntl.h>
 #include "OptionParser.h"
 #include "ProcessOperations.h"
-#include <boost/thread.hpp>
+
 #include <boost/date_time.hpp>
+#include <thread>
+#include <chrono>
 
 
 #include "MimeTypes.h"
@@ -58,7 +60,7 @@ int main(int argc, char* argv[])
 	try
 	{
         // Handle signals here
-		boost::thread myThread(HandleSignals);
+		thread myThread(HandleSignals);
 
         // Ignore all signals here
         sigset_t ignore_set;
@@ -177,8 +179,7 @@ void HandleSignals()
 	syslog(LOG_ERR, "Doing some signal handling!!");
 	while(true)
 	{
-		boost::posix_time::seconds secs(5);
-		boost::this_thread::sleep(secs);
+		this_thread::sleep_for(chrono::seconds {5});
 	}
 
 }
