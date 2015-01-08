@@ -51,7 +51,7 @@ void InitialiseServer(map<string, string>& config);
 void SetupSigChildHandler();
 void PrintHelpAndExit();
 void PrintVersionAndExit();
-void HandleSignals();
+void HandleSignals(int);
 
 int fd[2]; // my pipe file descriptors, global so can pass to the signal handler
 
@@ -59,8 +59,13 @@ int main(int argc, char* argv[])
 {
 	try
 	{
+		if (pipe(fd) < 0)
+		{
+			syslog(LOG_DEBUG, "Pipe error");
+		}
+
         // Handle signals here
-		thread myThread(HandleSignals);
+		thread myThread(HandleSignals, fd[1]);
 
         // Block all signals here
         sigset_t block_set;
@@ -73,10 +78,7 @@ int main(int argc, char* argv[])
 		OptionParser opt_parser(argc, argv);
 		http_options opts;
 
-        if (pipe(fd) < 0)
-        {
-            syslog(LOG_DEBUG, "Pipe error");
-        }
+
 
 		if (opt_parser.Parse(opts) < 0)
 			exit(1);
@@ -170,16 +172,21 @@ void sigchldHandler(int sigNum)
 {
 	SetupSigChildHandler();
 	children_terminated++;
-	write(fd[1], "T", 1);
 }
 
-void HandleSignals()
+void HandleSignals(int writeFd)
 {
 	SetupSigChildHandler();
 	syslog(LOG_ERR, "Doing some signal handling!!");
 	while(true)
 	{
 		this_thread::sleep_for(chrono::seconds {5});
+
+		if (children_terminated) {
+			syslog(LOG_INFO, "Sending a trigger into the pipe that a child terminated.");
+
+			write(writeFd, "T", 1);
+		}
 	}
 
 }
