@@ -39,7 +39,9 @@
 #include "MimeTypes.h"
 using namespace std;
 
-#define DEFAULT_CONF_PATH "/etc/HttpTwo/Http.conf"
+#ifndef DEFAULT_CONF_PATH
+# define DEFAULT_CONF_PATH "/etc/HttpTwo/Http.conf"
+#endif
 #define VERSION "HttpServer 1.0"
 
 volatile sig_atomic_t children_terminated = 0;
