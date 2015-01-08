@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 
         while(1)
 		{
-			ProcessOperations::RecoverTerminatedChildren();
+			ProcessOperations::RecoverTerminatedChildren(fd[0]);
 
 			client_socket = connection.AcceptClient(fd[0]);
 			if (client_socket > -1)

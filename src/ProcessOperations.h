@@ -14,7 +14,7 @@ extern volatile sig_atomic_t children_terminated;
 class ProcessOperations {
 public:
 	ProcessOperations();
-	static void RecoverTerminatedChildren();
+	static void RecoverTerminatedChildren(int readFd);
 	static void Daemonise();
 	static int ForkNewProcess();
 	virtual ~ProcessOperations();

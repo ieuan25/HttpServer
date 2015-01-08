@@ -23,7 +23,7 @@ using namespace std;
 ProcessOperations::ProcessOperations() {
 }
 
-void ProcessOperations::RecoverTerminatedChildren()
+void ProcessOperations::RecoverTerminatedChildren(int readFd)
 {
 	int pid;
 	int status;
@@ -32,6 +32,12 @@ void ProcessOperations::RecoverTerminatedChildren()
 	{
 		if ((pid = wait(&status)) < 0)
 			throw runtime_error(strerror(errno));
+
+		// Reading a child termination trigger from the pipe so that
+		// the main loop does not spin on select(...)
+		char buf;
+		read(readFd, &buf, 1);
+
 		children_terminated--;
 		syslog(LOG_WARNING, "Child process with pid %d terminated with status %d. %d child processes left.", pid, status, children_terminated);
 	}
