@@ -62,10 +62,10 @@ int main(int argc, char* argv[])
         // Handle signals here
 		thread myThread(HandleSignals);
 
-        // Ignore all signals here
-        sigset_t ignore_set;
-        sigfillset(&ignore_set);
-        sigprocmask(SIG_BLOCK, &ignore_set, NULL);
+        // Block all signals here
+        sigset_t block_set;
+        sigfillset(&block_set);
+        sigprocmask(SIG_BLOCK, &block_set, NULL);
 
 		int client_socket;
 		int pid;
