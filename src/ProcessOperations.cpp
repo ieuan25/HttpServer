@@ -6,6 +6,8 @@
  */
 
 #include "ProcessOperations.h"
+#include "Stats.h"
+
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
@@ -18,28 +20,38 @@
 #include <fcntl.h>
 #include <syslog.h>
 
+#include <boost/format.hpp>
+
 using namespace std;
+namespace bo = boost;
 
 ProcessOperations::ProcessOperations() {
 }
 
-void ProcessOperations::RecoverTerminatedChildren(int readFd)
+void ProcessOperations::RecoverTerminatedChildren()
 {
-	int pid;
-	int status;
-
 	while (children_terminated > 0)
 	{
+		int pid;
+		int status;
+
 		if ((pid = wait(&status)) < 0)
 			throw runtime_error(strerror(errno));
 
-		// Reading a child termination trigger from the pipe so that
-		// the main loop does not spin on select(...)
-		char buf;
-		read(readFd, &buf, 1);
-
 		children_terminated--;
 		syslog(LOG_WARNING, "Child process with pid %d terminated with status %d. %d child processes left.", pid, status, children_terminated);
+	}
+}
+
+void ProcessOperations::LogTotalClientConnections() {
+	if (sigUSR1Received) {
+		sigUSR1Received = 0;
+
+		syslog(
+			LOG_INFO,
+			bo::str(
+				bo::format("Stats >> total client connections: %1%")
+				% stats.clientConnections()).c_str());
 	}
 }
 
@@ -92,6 +104,7 @@ void ProcessOperations::Daemonise() {
 	if (fd0 != 0 || fd1 != 1 || fd2 != 2)
 		throw runtime_error("File descriptors not correctly set");
 }
+
 
 ProcessOperations::~ProcessOperations() {
 	// TODO Auto-generated destructor stub

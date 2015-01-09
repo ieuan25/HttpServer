@@ -9,14 +9,19 @@
 #define PROCESSOPERATIONS_H_
 
 #include <signal.h>
-extern volatile sig_atomic_t children_terminated;
+
+extern volatile sig_atomic_t children_terminated, sigUSR1Received;
 
 class ProcessOperations {
 public:
 	ProcessOperations();
-	static void RecoverTerminatedChildren(int readFd);
+
+	static void RecoverTerminatedChildren();
+	static void LogTotalClientConnections();
+
 	static void Daemonise();
 	static int ForkNewProcess();
+
 	virtual ~ProcessOperations();
 };
 

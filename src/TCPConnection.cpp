@@ -75,7 +75,12 @@ int TCPConnection::AcceptClient(int fd)
 	{
 		if (FD_ISSET(fd, &read_set))
 		{
-			syslog(LOG_INFO, "Child terminated so stopping blocking in select.");
+			// Empty the signal pipe.
+			// All we need are global signal flags like 'children_terminated'.
+			char buf;
+			while(read(fd, &buf, 1) > 0);
+
+			syslog(LOG_INFO, "Signal was received by the signal catcher thread. Let's check what it was.");
 			return -1;
 		}
 

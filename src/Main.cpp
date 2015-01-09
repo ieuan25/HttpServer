@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include "OptionParser.h"
 #include "ProcessOperations.h"
+#include "Stats.h"
 
 #include <boost/date_time.hpp>
 #include <thread>
@@ -46,9 +47,10 @@ using namespace std;
 #endif
 #define VERSION "HttpServer 1.0"
 
-volatile sig_atomic_t children_terminated = 0;
+volatile sig_atomic_t children_terminated = 0, sigUSR1Received;
 void InitialiseServer(map<string, string>& config);
 void SetupSigChildHandler();
+void SetupSigUSR1Handler();
 void PrintHelpAndExit();
 void PrintVersionAndExit();
 void HandleSignals(int);
@@ -59,7 +61,8 @@ int main(int argc, char* argv[])
 {
 	try
 	{
-		if (pipe(fd) < 0)
+		// Nonblocking pipe, so that read operations do not block.
+		if (pipe2(fd, O_NONBLOCK) < 0)
 		{
 			syslog(LOG_DEBUG, "Pipe error");
 		}
@@ -107,11 +110,14 @@ int main(int argc, char* argv[])
 
         while(1)
 		{
-			ProcessOperations::RecoverTerminatedChildren(fd[0]);
+			ProcessOperations::RecoverTerminatedChildren();
+			ProcessOperations::LogTotalClientConnections();
 
 			client_socket = connection.AcceptClient(fd[0]);
 			if (client_socket > -1)
 			{
+				stats.incClientConnections();
+
 				if ((pid = ProcessOperations::ForkNewProcess()) == 0)
 				{
 					syslog(LOG_DEBUG, "Http process %d created", getpid());
@@ -174,16 +180,29 @@ void sigchldHandler(int sigNum)
 	children_terminated++;
 }
 
+void sigUSR1Handler(int sigNum) {
+	sigUSR1Received = 1;
+}
+
 void HandleSignals(int writeFd)
 {
 	SetupSigChildHandler();
+	SetupSigUSR1Handler();
+
 	syslog(LOG_ERR, "Doing some signal handling!!");
+
 	while(true)
 	{
 		this_thread::sleep_for(chrono::seconds {5});
 
 		if (children_terminated) {
 			syslog(LOG_INFO, "Sending a trigger into the pipe that a child terminated.");
+
+			write(writeFd, "T", 1);
+		}
+
+		if (sigUSR1Received) {
+			syslog(LOG_INFO, "Sending a trigger into the pipe that USR1 signal was received.");
 
 			write(writeFd, "T", 1);
 		}
@@ -194,6 +213,7 @@ void HandleSignals(int writeFd)
 void SetupSigChildHandler()
 {
 	struct sigaction sig_act;
+
 	sig_act.sa_handler = sigchldHandler;
 	sigfillset(&sig_act.sa_mask); // Important, blocking all signals while the handler runs.
 	memset(&sig_act.sa_flags, '\0', sizeof(sig_act.sa_flags));
@@ -201,4 +221,15 @@ void SetupSigChildHandler()
 
 	if (sigaction(SIGCHLD, &sig_act, NULL) < 0)
 		syslog(LOG_ERR, "Could not register signal handler for SIGCHILD");
+}
+
+void SetupSigUSR1Handler() {
+	struct sigaction sig_act;
+
+	sig_act.sa_handler = sigUSR1Handler;
+	sigfillset(&sig_act.sa_mask); // Important, blocking all signals while the handler runs.
+	sig_act.sa_flags = 0;
+
+	if (sigaction(SIGUSR1, &sig_act, NULL) < 0)
+		syslog(LOG_ERR, "Could not register signal handler for SIGUSR1");
 }
